@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#131c33"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#6366f1" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="55%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="innerGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#bae6fd" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0ea5e9" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle Background -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bgGrad)" stroke="url(#rimGrad)" stroke-width="10"/>
+
+  <!-- Minimalist Proxy Shield + Globe Symbol -->
+  <g filter="url(#softShadow)">
+    <!-- Outer Shield Contour -->
+    <path d="M256 88 L392 142 V248 C392 338 334 404 256 432 C178 404 120 338 120 248 V142 Z"
+          fill="none" stroke="url(#shieldGrad)" stroke-width="26" stroke-linejoin="round"/>
+
+    <!-- Globe Latitude & Meridian Lines -->
+    <circle cx="256" cy="248" r="78" fill="none" stroke="url(#shieldGrad)" stroke-width="18"/>
+    <ellipse cx="256" cy="248" rx="38" ry="78" fill="none" stroke="#38bdf8" stroke-width="14" stroke-opacity="0.9"/>
+    <line x1="178" y1="248" x2="334" y2="248" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" stroke-opacity="0.9"/>
+
+    <!-- Proxy Routing Nodes -->
+    <circle cx="256" cy="170" r="14" fill="#38bdf8" stroke="#0f172a" stroke-width="5"/>
+    <circle cx="334" cy="248" r="14" fill="#a855f7" stroke="#0f172a" stroke-width="5"/>
+    <circle cx="178" cy="248" r="14" fill="#38bdf8" stroke="#0f172a" stroke-width="5"/>
+    <circle cx="256" cy="248" r="16" fill="url(#innerGlow)"/>
+  </g>
+</svg>

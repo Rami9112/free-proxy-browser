@@ -1,0 +1,21 @@
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Runtime browser profile caches, WebView2 cache, logs, and local SQLite DB
+data/profiles/
+data/webview2_cache/
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/*.log
+kernels/*/debug.log
+
+# Raw >50MB kernel binaries (tracked in Git as <45MB *.zpart* chunks and auto-unpacked on launch)
+kernels/taebrowser_153/153.0.8010.27/chrome.dll
+kernels/yangbrowser_153/xul.dll
+kernels/yangbrowser_153/browser/omni.ja

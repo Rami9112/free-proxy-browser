@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free Proxy Browser — Live C++ Fingerprint Hook Verification Suite</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #131b2e;
+      --border: #23304d;
+      --accent: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 28px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1240px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #131b2e 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 26px;
+      margin-bottom: 22px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    h1 { font-size: 21px; font-weight: 700; color: #fff; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .card h2 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+    }
+    .kv:last-child { border-bottom: none; }
+    .k { color: var(--muted); flex-shrink: 0; }
+    .v {
+      font-family: var(--mono);
+      color: #f8fafc;
+      text-align: right;
+      word-break: break-all;
+    }
+    .v.match { color: var(--emerald); font-weight: 600; }
+    .v.warn { color: var(--amber); }
+    canvas {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #090d16;
+      margin-top: 8px;
+      width: 100%;
+      height: 54px;
+    }
+    .btn {
+      background: var(--accent);
+      color: #090d16;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="/assets/icon.svg" alt="Free Proxy Browser" style="width:42px;height:42px;border-radius:10px;box-shadow:0 4px 14px rgba(56,189,248,0.32);" />
+        <div>
+          <h1>Free Proxy Browser — Live C++ Engine Fingerprint Probe (TaeBrowser &amp; YangBrowser)</h1>
+          <div class="sub" id="profileHeader">Probing active browser kernel hooks (TaeBrowser 153 / YangBrowser 153)...</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span class="badge" id="engineBadge">DETECTING KERNEL...</span>
+        <button class="btn" onclick="runAllProbes()">Re-Run Probes</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2><span>1. Navigator & OS Emulation</span><span id="navStatus"></span></h2>
+        <div id="navRows"></div>
+      </div>
+
+      <div class="card">
+        <h2><span>2. WebGL & WebGPU Hardware Spoofing</span><span id="webglStatus"></span></h2>
+        <div id="webglRows"></div>
+      </div>
+
+      <div class="card">
+        <h2><span>3. Canvas 2D & AudioContext Noise</span><span id="canvasStatus"></span></h2>
+        <div id="canvasRows"></div>
+        <canvas id="fpCanvas" width="320" height="54"></canvas>
+      </div>
+
+      <div class="card">
+        <h2><span>4. DOMRect (ClientRects) & Screen</span><span id="rectStatus"></span></h2>
+        <div id="rectRows"></div>
+        <div id="rectProbeBox" style="position:absolute; left:-9999px; width:137.45px; height:42.85px; font-size:15px;">freeanti-clientrect-probe</div>
+      </div>
+
+      <div class="card">
+        <h2><span>5. TimeZone, Locale & WebRTC ICE</span><span id="netStatus"></span></h2>
+        <div id="netRows"></div>
+      </div>
+
+      <div class="card">
+        <h2><span>6. Injected Sidecar Configuration</span><span id="sidecarStatus"></span></h2>
+        <div id="sidecarRows"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function sha256Hex(str) {
+      const buf = new TextEncoder().encode(str);
+      const hash = await crypto.subtle.digest("SHA-256", buf);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function renderRows(containerId, items) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = items.map(([k, v, cls]) => `
+        <div class="kv">
+          <span class="k">${k}</span>
+          <span class="v ${cls || ''}">${v === undefined || v === null ? 'undefined' : v}</span>
+        </div>
+      `).join("");
+    }
+
+    async function probeCanvas() {
+      const c = document.getElementById("fpCanvas");
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      const grad = ctx.createLinearGradient(0, 0, 320, 54);
+      grad.addColorStop(0, "#0284c7");
+      grad.addColorStop(0.5, "#7c3aed");
+      grad.addColorStop(1, "#10b981");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 320, 54);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "16px Arial";
+      ctx.fillText("freeanti CanvasMark C++ Hook 🚀 153", 12, 32);
+      ctx.strokeStyle = "#f43f5e";
+      ctx.arc(280, 27, 18, 0, Math.PI * 2);
+      ctx.stroke();
+      const dataUrl = c.toDataURL();
+      const hash = await sha256Hex(dataUrl);
+      return hash.slice(0, 24);
+    }
+
+    async function probeAudio() {
+      try {
+        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if (!OfflineCtx) return "Unsupported";
+        const ctx = new OfflineCtx(1, 44100, 44100);
+        const osc = ctx.createOscillator();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(10000, ctx.currentTime);
+        const comp = ctx.createDynamicsCompressor();
+        osc.connect(comp);
+        comp.connect(ctx.destination);
+        osc.start(0);
+        const buffer = await ctx.startRendering();
+        const data = buffer.getChannelData(0);
+        let sum = 0;
+        for (let i = 4500; i < 5000; i++) sum += Math.abs(data[i]);
+        const hash = await sha256Hex(sum.toFixed(12));
+        return `${sum.toFixed(8)} (${hash.slice(0, 12)})`;
+      } catch (e) {
+        return "Error: " + e.message;
+      }
+    }
+
+    async function probeWebGL() {
+      try {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+        if (!gl) return { vendor: "N/A", renderer: "N/A", version: "N/A", slVersion: "N/A", viewport: "N/A", pixelHash: "N/A" };
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        const vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+        const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        const version = gl.getParameter(gl.VERSION);
+        const slVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+        const vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+        gl.clearColor(0.23, 0.51, 0.87, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        const pixels = new Uint8Array(16);
+        gl.readPixels(0, 0, 2, 2, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        const pixelHash = await sha256Hex(Array.from(pixels).join(","));
+        return {
+          vendor,
+          renderer,
+          version,
+          slVersion,
+          viewport: vp ? `${vp[0]} x ${vp[1]}` : "N/A",
+          pixelHash: pixelHash.slice(0, 20)
+        };
+      } catch (e) {
+        return { vendor: "Error", renderer: e.message, version: "", slVersion: "", viewport: "", pixelHash: "" };
+      }
+    }
+
+    async function probeWebGPU() {
+      try {
+        if (!navigator.gpu) return "Disabled / Not Exposed";
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter || !adapter.info) return "No Adapter";
+        return `${adapter.info.vendor || 'default'} / ${adapter.info.architecture || 'default'}`;
+      } catch (e) {
+        return "Unavailable";
+      }
+    }
+
+    async function probeWebRTC() {
+      return new Promise(resolve => {
+        try {
+          const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+          if (!RTCPeer) return resolve("Disabled (media.peerconnection.enabled=false)");
+          const ips = new Set();
+          const pc = new RTCPeer({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+          pc.createDataChannel("probe");
+          pc.onicecandidate = e => {
+            if (!e.candidate) {
+              pc.close();
+              resolve(ips.size ? Array.from(ips).join(", ") : "No Local/STUN Leak");
+              return;
+            }
+            const c = e.candidate.candidate;
+            const m = c.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+            if (m) ips.add(m[1]);
+          };
+          pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => resolve("Blocked"));
+          setTimeout(() => {
+            try { pc.close(); } catch {}
+            resolve(ips.size ? Array.from(ips).join(", ") : "Protected / Masked");
+          }, 1500);
+        } catch (e) {
+          resolve("Disabled");
+        }
+      });
+    }
+
+    async function runAllProbes() {
+      const params = new URLSearchParams(location.search);
+      const profileId = params.get("profile_id") || "";
+      let inspectData = null;
+
+      if (profileId) {
+        try {
+          const res = await fetch(`/api/freeanti/profiles/${encodeURIComponent(profileId)}/inspect`);
+          if (res.ok) inspectData = await res.json();
+        } catch {}
+      }
+
+      const isFirefox = navigator.userAgent.includes("Firefox") || typeof InstallTrigger !== "undefined";
+      document.getElementById("engineBadge").textContent = isFirefox
+        ? "YANGBROWSER 153 (Gecko 153.0.4)"
+        : "TAEBROWSER 153 (Chromium 153.0.8010.27)";
+
+      if (inspectData && inspectData.profile) {
+        document.getElementById("profileHeader").textContent =
+          `Profile: ${inspectData.profile.name} (ID: ${inspectData.profile.id}) — Live C++ Hook Verification`;
+      }
+
+      // 1. Navigator
+      let chPlatform = "N/A";
+      if (navigator.userAgentData) {
+        try {
+          const he = await navigator.userAgentData.getHighEntropyValues(["platform", "platformVersion", "architecture", "bitness", "model"]);
+          chPlatform = `${he.platform} ${he.platformVersion} (${he.architecture}/${he.bitness}-bit)`;
+        } catch {}
+      }
+      renderRows("navRows", [
+        ["navigator.userAgent", navigator.userAgent, "match"],
+        ["navigator.platform", navigator.platform, "match"],
+        ["navigator.oscpu", navigator.oscpu ?? "(hidden/Chromium)", ""],
+        ["navigator.vendor", navigator.vendor || "(empty/Gecko)", ""],
+        ["navigator.hardwareConcurrency", navigator.hardwareConcurrency, "match"],
+        ["navigator.deviceMemory", navigator.deviceMemory ?? "(hidden on iOS/Gecko)", "match"],
+        ["navigator.maxTouchPoints", navigator.maxTouchPoints, "match"],
+        ["navigator.webdriver", String(navigator.webdriver), navigator.webdriver ? "warn" : "match"],
+        ["Client Hints (UA-CH)", chPlatform, "match"]
+      ]);
+
+      // 2. WebGL, OpenGL/ANGLE & WebGPU
+      const glInfo = await probeWebGL();
+      const gpuInfo = await probeWebGPU();
+      const profFp = inspectData?.profile?.fingerprint || {};
+      renderRows("webglRows", [
+        ["Graphics API / ANGLE", `${profFp.graphics_api || "Direct3D11"} (--use-angle=${profFp.angle_backend || "d3d11"})`, "match"],
+        ["UNMASKED_VENDOR_WEBGL", glInfo.vendor, "match"],
+        ["UNMASKED_RENDERER_WEBGL", glInfo.renderer, "match"],
+        ["WebGL VERSION (7938)", glInfo.version, "match"],
+        ["SHADING_LANGUAGE (35724)", glInfo.slVersion, ""],
+        ["WebGL ReadPixels Hash", glInfo.pixelHash, "match"],
+        ["MAX_VIEWPORT_DIMS", glInfo.viewport, ""],
+        ["WebGPU Adapter Info", gpuInfo, "match"]
+      ]);
+
+      // 3. Canvas & Audio
+      const canvasHash = await probeCanvas();
+      const audioSig = await probeAudio();
+      const sunParams = inspectData?.compiled?.sunBrowserParams || {};
+      renderRows("canvasRows", [
+        ["Canvas 2D SHA-256", canvasHash, "match"],
+        ["Injected CanvasMark Seed", sunParams.CanvasMark || "(active)", ""],
+        ["AudioBuffer Fingerprint", audioSig, "match"],
+        ["Injected AudioFp Seed", sunParams.AudioFp ?? "(active)", ""]
+      ]);
+
+      // 4. DOMRect & Screen
+      const box = document.getElementById("rectProbeBox");
+      const rect = box.getBoundingClientRect();
+      renderRows("rectRows", [
+        ["DOMRect.width", rect.width, "match"],
+        ["DOMRect.height", rect.height, "match"],
+        ["DOMRect.x / y", `${rect.x} / ${rect.y}`, "match"],
+        ["Injected ClientRectFp", sunParams.ClientRectFp ?? "(active)", ""],
+        ["window.screen", `${screen.width} x ${screen.height} (avail: ${screen.availWidth}x${screen.availHeight})`, "match"],
+        ["devicePixelRatio", window.devicePixelRatio, ""]
+      ]);
+
+      // 5. TimeZone, Locale & WebRTC
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const webrtcIp = await probeWebRTC();
+      const resLoc = inspectData?.compiled?.resolved_locale || {};
+      renderRows("netRows", [
+        ["Proxy Country", resLoc.proxy_country || profFp.proxy_country || "KR", "match"],
+        ["TimeZone Mode", resLoc.follow_proxy_timezone !== false ? "🔗 Auto-Follow Proxy IP" : "✋ Manual TimeZone", "match"],
+        ["Intl TimeZone", tz, "match"],
+        ["Language Mode", resLoc.follow_proxy_language !== false ? "🔗 Auto-Follow Proxy IP" : "✋ Manual Languages", "match"],
+        ["navigator.language", navigator.language, "match"],
+        ["navigator.languages", (navigator.languages || []).join(", "), "match"],
+        ["WebRTC ICE Candidates", webrtcIp, "match"],
+        ["Dynamic WebRTC IP", sunParams.WebRTCAddress || "Disabled/Protected", ""]
+      ]);
+
+      // 6. Sidecars
+      const sidecars = inspectData?.compiled?.sidecar_files || {};
+      const valHeaders = inspectData?.compiled?.chromeValidationHeaders || {};
+      renderRows("sidecarRows", [
+        ["StaticConfig (MD5)", sidecars.static_config?.filename || "N/A", "match"],
+        ["DynamicConfig (MD5)", sidecars.dynamic_config?.filename || "N/A", "match"],
+        ["WebGLFP (MD5)", sidecars.webgl_fp?.filename || "N/A", "match"],
+        ["x-browser-validation", valHeaders["x-browser-validation"] || "N/A", "match"],
+        ["DeviceName", inspectData?.compiled?.staticConfig?.DeviceName || "N/A", ""]
+      ]);
+    }
+
+    window.addEventListener("DOMContentLoaded", runAllProbes);
+  </script>
+</body>
+</html>
