@@ -389,7 +389,9 @@
       // 6. Sidecars
       const sidecars = inspectData?.compiled?.sidecar_files || {};
       const valHeaders = inspectData?.compiled?.chromeValidationHeaders || {};
+      const hostTag = inspectData?.launch_plan?.host_platform?.platform_tag || "multi-os";
       renderRows("sidecarRows", [
+        ["Host OS / Architecture", hostTag.toUpperCase(), "match"],
         ["StaticConfig (MD5)", sidecars.static_config?.filename || "N/A", "match"],
         ["DynamicConfig (MD5)", sidecars.dynamic_config?.filename || "N/A", "match"],
         ["WebGLFP (MD5)", sidecars.webgl_fp?.filename || "N/A", "match"],

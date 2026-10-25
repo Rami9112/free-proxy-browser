@@ -212,6 +212,7 @@ class FreeAntiRequestHandler(BaseHTTPRequestHandler):
                     "ok": True,
                     "profile": prof,
                     "launch_plan": {
+                        "host_platform": plan.get("host_platform"),
                         "executable": plan["executable"],
                         "executable_exists": plan["executable_exists"],
                         "webdriver": plan["webdriver"],
