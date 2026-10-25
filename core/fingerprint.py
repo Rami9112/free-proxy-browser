@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from .extension_builder import compute_chrome_validation_headers
+from .platform_compat import get_subprocess_creationflags, resolve_curl_executable
 
 # ---------------------------------------------------------------------------
 # Country -> TimeZone, Browser Languages (Accept-Language), UI Lang, GPS Map
@@ -831,7 +832,9 @@ def md5_hex(text: str) -> str:
 def js_hashcode(text: str) -> int:
     h = 0
     for ch in text:
-        h = ctypes.c_int32(((h << 5) - h) + ord(ch)).value
+        h = (((h << 5) - h) + ord(ch)) & 0xFFFFFFFF
+        if h & 0x80000000:
+            h -= 0x100000000
     return h
 
 
@@ -1030,15 +1033,16 @@ def check_proxy_and_resolve_geo(
     country_code = (country_hint or prx.get("country") or "").strip().upper()
     fields_qs = "fields=status,country,countryCode,regionName,city,lat,lon,timezone,isp,query"
 
-    # 1. Live tunnel check through configured SOCKS5 / HTTP proxy via curl.exe
+    # 1. Live tunnel check through configured SOCKS5 / HTTP proxy via system curl
     if ptype in ("socks5", "http", "https") and phost and pport > 0 and not target_ip:
         curl_scheme = "socks5h" if ptype == "socks5" else ptype
         auth_part = f"{puser}:{ppass}@" if puser else ""
         proxy_url = f"{curl_scheme}://{auth_part}{phost}:{pport}"
+        curl_bin = resolve_curl_executable()
         try:
             proc = subprocess.run(
                 [
-                    "curl.exe",
+                    curl_bin,
                     "-s",
                     "-m",
                     "6",
@@ -1049,7 +1053,7 @@ def check_proxy_and_resolve_geo(
                 capture_output=True,
                 text=True,
                 timeout=7.5,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                creationflags=get_subprocess_creationflags(),
             )
             if proc.returncode == 0 and proc.stdout.strip():
                 data = json.loads(proc.stdout.strip())

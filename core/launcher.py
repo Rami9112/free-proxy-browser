@@ -28,6 +28,13 @@ from .fingerprint import (
     parse_proxy_string,
 )
 from .kernels import discover_kernels
+from .platform_compat import (
+    detect_host_platform,
+    format_command_line,
+    resolve_angle_flags,
+    resolve_kernel_executable,
+    terminate_process_cross_platform,
+)
 
 
 class BrowserLauncher:
@@ -82,11 +89,14 @@ class BrowserLauncher:
         headless: bool = False,
         extra_args: Optional[List[str]] = None,
         write_files: bool = True,
+        host_os: Optional[str] = None,
+        host_arch: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Compiles all sidecars and returns the full launch command, arguments,
-        environment variables, and compiled configurations.
+        environment variables, and compiled configurations across any target OS & CPU architecture.
         """
+        plat = detect_host_platform(host_os, host_arch)
         pid = str(profile["id"])
         kernel_type = normalize_kernel_name(profile.get("kernel_type", "taebrowser"))
         fp = profile.get("fingerprint") or {}
@@ -148,15 +158,17 @@ class BrowserLauncher:
         proxy_host = proxy.get("host") or ""
         proxy_port = proxy.get("port") or ""
 
+        kernels_dir = self.data_dir.parent / "kernels"
+        resolved_k = resolve_kernel_executable(kernel_type, kernels_dir, plat["host_os"], plat["host_arch"])
+
         if kernel_type == "yangbrowser":
             yb_info = self.kernels_info.get("default_yangbrowser")
-            if yb_info:
+            if yb_info and not host_os and not host_arch and not plat["is_simulated"]:
                 executable = yb_info["executable"]
                 webdriver_path = yb_info.get("webdriver")
             else:
-                executable = str(
-                    self.data_dir.parent / "kernels" / "yangbrowser_153" / "YangBrowser.exe"
-                )
+                executable = resolved_k["executable"]
+                webdriver_path = resolved_k["webdriver"]
             env_vars["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
             env_vars["MOZ_DISABLE_CONTENT_SANDBOX"] = "1"
             if fp.get("gpu_mode") == "disabled":
@@ -179,13 +191,12 @@ class BrowserLauncher:
                 args.append("-headless")
         else:
             tb_info = self.kernels_info.get("default_taebrowser")
-            if tb_info:
+            if tb_info and not host_os and not host_arch and not plat["is_simulated"]:
                 executable = tb_info["executable"]
                 webdriver_path = tb_info.get("webdriver")
             else:
-                executable = str(
-                    self.data_dir.parent / "kernels" / "taebrowser_153" / "TaeBrowser.exe"
-                )
+                executable = resolved_k["executable"]
+                webdriver_path = resolved_k["webdriver"]
 
             args.extend(
                 [
@@ -213,23 +224,19 @@ class BrowserLauncher:
             else:
                 args.append("--enable-blink-features=IdleDetection,Fledge")
 
-            # Graphics Card (GPU) & OpenGL / ANGLE / Direct3D / WebGPU Flags
+            # Graphics Card (GPU) & OpenGL / ANGLE / Direct3D / Metal / Vulkan / WebGPU Flags
             gpu_mode = str(fp.get("gpu_mode") or "enabled").lower()
             angle_backend = str(fp.get("angle_backend") or "d3d11").lower()
             graphics_api = str(fp.get("graphics_api") or "Direct3D11")
-            if gpu_mode == "disabled":
-                args.append("--disable-gpu")
-                args.append("--disable-software-rasterizer")
-            else:
-                if angle_backend in ("gl", "opengl") or graphics_api == "OpenGL":
-                    args.append("--use-angle=gl")
-                elif angle_backend == "d3d9" or graphics_api == "Direct3D9":
-                    args.append("--use-angle=d3d9")
-                elif angle_backend == "swiftshader":
-                    args.append("--use-gl=angle")
-                    args.append("--use-angle=swiftshader")
-                elif angle_backend == "d3d11":
-                    args.append("--use-angle=d3d11")
+            args.extend(
+                resolve_angle_flags(
+                    gpu_mode=gpu_mode,
+                    angle_backend=angle_backend,
+                    graphics_api=graphics_api,
+                    host_os=plat["host_os"],
+                    emulated_os=os_platform,
+                )
+            )
 
             if fp.get("webgpu_mode") == "disabled":
                 args.append("--disable-features=Vulkan,WebGPU")
@@ -257,11 +264,12 @@ class BrowserLauncher:
         args.extend(startup_urls)
 
         return {
+            "host_platform": plat,
             "executable": executable,
             "executable_exists": Path(executable).is_file(),
             "webdriver": webdriver_path,
             "args": args,
-            "command_line": subprocess.list2cmdline([executable] + args),
+            "command_line": format_command_line([executable] + args, host_os=plat["host_os"]),
             "env": env_vars,
             "compiled": compiled,
         }
@@ -586,34 +594,8 @@ class BrowserLauncher:
             return {"stopped": False, "profile_id": pid, "message": "Profile is not running"}
 
         proc: subprocess.Popen = info["proc"]
-        os_pid = info.get("pid") or proc.pid
-        try:
-            if proc.poll() is None:
-                # 1. Request graceful close (WM_CLOSE) so Cookies SQLite WAL and Session Tabs flush to disk
-                subprocess.run(
-                    ["taskkill", "/PID", str(os_pid)],
-                    capture_output=True,
-                    timeout=3,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                )
-                deadline = time.time() + 3.0
-                while time.time() < deadline:
-                    if proc.poll() is not None:
-                        break
-                    time.sleep(0.15)
-                # 2. Fallback force-kill only if still alive after graceful timeout
-                if proc.poll() is None:
-                    subprocess.run(
-                        ["taskkill", "/F", "/T", "/PID", str(os_pid)],
-                        capture_output=True,
-                        timeout=5,
-                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                    )
-        except Exception:
-            try:
-                proc.kill()
-            except Exception:
-                pass
+        os_pid = int(info.get("pid") or proc.pid)
+        terminate_process_cross_platform(proc, os_pid)
         return {"stopped": True, "profile_id": pid, "pid": os_pid}
 
     def stop_all_profiles(self) -> List[Dict[str, Any]]:

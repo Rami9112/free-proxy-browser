@@ -12,15 +12,20 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .kernel_rebrander import ensure_rebranded_kernels
+from .platform_compat import (
+    detect_host_platform,
+    get_platform_appdata_dir,
+    get_platform_global_store_dir,
+    resolve_kernel_executable,
+)
 
 
 def get_default_cwd_global() -> Path:
-    appdata = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-    return Path(appdata) / "adspower_global" / "cwd_global"
+    return get_platform_appdata_dir()
 
 
 def get_default_global_store() -> Path:
-    return Path(r"C:\.ADSPOWER_GLOBAL")
+    return get_platform_global_store_dir()
 
 
 def _read_text_safe(path: Path) -> str:
@@ -45,15 +50,18 @@ def normalize_kernel_type(raw: Optional[str]) -> str:
 def discover_kernels(
     cwd_global: Optional[Path] = None,
     freeanti_root: Optional[Path] = None,
+    host_os: Optional[str] = None,
+    host_arch: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Builds/verifies `taebrowser_153` (`TaeBrowser.exe`) and `yangbrowser_153` (`YangBrowser.exe`)
-    inside `freeanti/kernels/` and returns their full metadata.
+    Builds/verifies `taebrowser_153` and `yangbrowser_153` across Windows, macOS, and Linux
+    (`x64`, `arm64`, `x86`) and returns their full metadata.
     """
+    plat = detect_host_platform(host_os, host_arch)
     base = cwd_global or get_default_cwd_global()
     root = freeanti_root or Path(__file__).resolve().parent.parent
 
-    # Ensure rebranded TaeBrowser & YangBrowser kernels are built
+    # Ensure rebranded TaeBrowser & YangBrowser kernels are unpacked/built
     ensure_rebranded_kernels(root, base)
 
     kernels_dir = root / "kernels"
@@ -61,6 +69,7 @@ def discover_kernels(
     yang_dir = kernels_dir / "yangbrowser_153"
 
     result: Dict[str, Any] = {
+        "platform": plat,
         "kernels_root": str(kernels_dir),
         "taebrowser": [],
         "yangbrowser": [],
@@ -75,19 +84,19 @@ def discover_kernels(
     }
 
     # 1. TaeBrowser 153 (Chromium 153.0.8010.27)
-    tae_exe = tae_dir / "TaeBrowser.exe"
-    if tae_exe.is_file():
+    tae_resolved = resolve_kernel_executable("taebrowser", kernels_dir, plat["host_os"], plat["host_arch"])
+    if tae_dir.is_dir() or tae_resolved["executable_exists"]:
         update_ver = _read_text_safe(tae_dir / "update_version_key") or "20260918"
         chromium_subver = "153.0.8010.27"
         chrome_dll_path = None
-        for sub in tae_dir.iterdir():
-            if sub.is_dir() and re.match(r"^\d+\.\d+\.\d+\.\d+$", sub.name):
-                chromium_subver = sub.name
-                dll_candidate = sub / "chrome.dll"
-                if dll_candidate.is_file():
-                    chrome_dll_path = str(dll_candidate)
-                break
-        driver_path = tae_dir / "chromedriver.exe"
+        if tae_dir.is_dir():
+            for sub in tae_dir.iterdir():
+                if sub.is_dir() and re.match(r"^\d+\.\d+\.\d+\.\d+$", sub.name):
+                    chromium_subver = sub.name
+                    dll_candidate = sub / "chrome.dll"
+                    if dll_candidate.is_file():
+                        chrome_dll_path = str(dll_candidate)
+                    break
         components_dir = tae_dir / "components"
         tae_info = {
             "id": "taebrowser_153",
@@ -97,9 +106,12 @@ def discover_kernels(
             "kernel_version": "153",
             "chromium_version": chromium_subver,
             "update_version_key": update_ver,
-            "executable": str(tae_exe),
+            "host_os": plat["host_os"],
+            "host_arch": plat["host_arch"],
+            "executable": tae_resolved["executable"],
+            "executable_exists": tae_resolved["executable_exists"],
             "chrome_dll": chrome_dll_path,
-            "webdriver": str(driver_path) if driver_path.is_file() else None,
+            "webdriver": tae_resolved["webdriver"],
             "components_dir": str(components_dir) if components_dir.is_dir() else None,
         }
         result["taebrowser"].append(tae_info)
@@ -108,11 +120,10 @@ def discover_kernels(
         result["default_sunbrowser"] = tae_info
 
     # 2. YangBrowser 153 (Gecko 153.0.4)
-    yang_exe = yang_dir / "YangBrowser.exe"
-    if yang_exe.is_file():
+    yang_resolved = resolve_kernel_executable("yangbrowser", kernels_dir, plat["host_os"], plat["host_arch"])
+    if yang_dir.is_dir() or yang_resolved["executable_exists"]:
         update_ver = _read_text_safe(yang_dir / "update_version_key") or "20260907"
         xul_dll = yang_dir / "xul.dll"
-        driver_path = yang_dir / "geckodriver.exe"
         app_ini = _read_text_safe(yang_dir / "application.ini")
         gecko_ver = "153.0.4"
         build_id = "20260825153431"
@@ -131,9 +142,12 @@ def discover_kernels(
             "gecko_version": gecko_ver,
             "build_id": build_id,
             "update_version_key": update_ver,
-            "executable": str(yang_exe),
+            "host_os": plat["host_os"],
+            "host_arch": plat["host_arch"],
+            "executable": yang_resolved["executable"],
+            "executable_exists": yang_resolved["executable_exists"],
             "xul_dll": str(xul_dll) if xul_dll.is_file() else None,
-            "webdriver": str(driver_path) if driver_path.is_file() else None,
+            "webdriver": yang_resolved["webdriver"],
         }
         result["yangbrowser"].append(yang_info)
         result["flowerbrowser"].append(yang_info)
