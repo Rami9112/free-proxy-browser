@@ -435,6 +435,7 @@ def cmd_test(args: argparse.Namespace) -> int:
             print("  [...] 8b. Testing real YangBrowser 153 (YangBrowser.exe) launch with --extended-parameters...")
             yb_session = launcher.start_profile("fa1002flw", headless=True)
             assert yb_session["status"] == "Active" and yb_session["pid"] > 0
+            assert yb_session["marionette_port"] > 0 and yb_session["debug_port"] > 0
             print(
                 f"  [PASS] 8b. YangBrowser 153 launched! PID={yb_session['pid']}, "
                 f"Marionette={yb_session['marionette_port']}, DebugWS={yb_session['ws']['puppeteer']}"

@@ -340,9 +340,11 @@ class BrowserLauncher:
         profile_dir = Path(plan["compiled"]["profile_dir"])
         browser_msg_file = profile_dir / "BrowserMessage"
         devtools_port_file = profile_dir / "DevToolsActivePort"
+        marionette_port_file = profile_dir / "MarionetteActivePort"
+        bidi_server_file = profile_dir / "WebDriverBiDiServer.json"
 
-        # Remove stale BrowserMessage before launch
-        for f in (browser_msg_file, devtools_port_file):
+        # Remove stale handshake files before launch
+        for f in (browser_msg_file, devtools_port_file, marionette_port_file, bidi_server_file):
             try:
                 if f.is_file():
                     f.unlink()
@@ -437,6 +439,23 @@ class BrowserLauncher:
                         path_part = lines[1].strip()
                         session_info["debug_port"] = port
                         session_info["debug_link"] = f"ws://127.0.0.1:{port}{path_part}"
+                except Exception:
+                    pass
+            if not session_info["marionette_port"] and marionette_port_file.is_file():
+                try:
+                    m_txt = marionette_port_file.read_text(encoding="utf-8", errors="ignore").strip()
+                    if m_txt.isdigit() and int(m_txt) > 0:
+                        session_info["marionette_port"] = int(m_txt)
+                except Exception:
+                    pass
+            if not session_info["debug_link"] and bidi_server_file.is_file():
+                try:
+                    bidi = json.loads(bidi_server_file.read_text(encoding="utf-8", errors="ignore"))
+                    ws_host = str(bidi.get("ws_host") or "127.0.0.1").strip()
+                    ws_port = int(bidi.get("ws_port") or 0)
+                    if ws_port > 0:
+                        session_info["debug_port"] = ws_port
+                        session_info["debug_link"] = f"ws://{ws_host}:{ws_port}"
                 except Exception:
                     pass
             if ktype == "yangbrowser":

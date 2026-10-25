@@ -1535,6 +1535,7 @@ def build_firefox_prefs_js(
                 "browser.sessionstore.restore_on_demand",
                 "privacy.sanitize.sanitizeOnShutdown",
                 "network.cookie.lifetimePolicy",
+                "marionette.port",
                 "network.proxy.type",
                 "network.proxy.socks",
                 "network.proxy.socks_port",

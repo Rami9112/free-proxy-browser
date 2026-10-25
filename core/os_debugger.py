@@ -566,14 +566,22 @@ class CrossPlatformDebugger:
                     continue
                 try:
                     sess = self.launcher.start_profile(pid, headless=True)
-                    ok_live = sess.get("status") == "Active" and int(sess.get("pid") or 0) > 0
+                    has_ports = (
+                        int(sess.get("debug_port") or 0) > 0
+                        and (kname != "yangbrowser" or int(sess.get("marionette_port") or 0) > 0)
+                    )
+                    ok_live = sess.get("status") == "Active" and int(sess.get("pid") or 0) > 0 and has_ports
                     live_spawn_results[kname] = {
                         "ok": ok_live,
                         "pid": sess.get("pid"),
                         "debug_port": sess.get("debug_port"),
                         "marionette_port": sess.get("marionette_port"),
                     }
-                    record_check(f"live_spawn[{kname}]", ok_live, f"pid={sess.get('pid')}")
+                    record_check(
+                        f"live_spawn[{kname}]",
+                        ok_live,
+                        f"pid={sess.get('pid')}, debug_port={sess.get('debug_port')}, marionette={sess.get('marionette_port')}",
+                    )
                 except Exception as exc:
                     live_spawn_results[kname] = {"ok": False, "error": str(exc)}
                     record_check(f"live_spawn[{kname}]", False, str(exc))
