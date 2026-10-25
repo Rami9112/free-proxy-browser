@@ -122,10 +122,14 @@ def get_platform_global_store_dir(host_os: Optional[str] = None) -> Path:
 def resolve_curl_executable(host_os: Optional[str] = None) -> str:
     os_name = normalize_host_os(host_os)
     if os_name == "windows":
-        found = shutil.which("curl.exe") or shutil.which("curl")
-        return found or "curl.exe"
-    found = shutil.which("curl")
-    return found or "curl"
+        if os.name == "nt":
+            found = shutil.which("curl.exe") or shutil.which("curl")
+            return found or "curl.exe"
+        return "curl.exe"
+    if os.name != "nt":
+        found = shutil.which("curl")
+        return found or "/usr/bin/curl"
+    return "/usr/bin/curl"
 
 
 def get_subprocess_creationflags(host_os: Optional[str] = None) -> int:
@@ -220,15 +224,20 @@ def resolve_kernel_executable(
             Path("/Applications/YangBrowser.app/Contents/MacOS/YangBrowser"),
             Path("/Applications/Firefox.app/Contents/MacOS/firefox"),
             Path.home() / "Applications" / "Firefox.app" / "Contents" / "MacOS" / "firefox",
+            Path("/opt/homebrew/bin/firefox"),
+            Path("/usr/local/bin/firefox"),
         ]
         linux_candidates = [
             yang_dir / "yangbrowser",
             yang_dir / "YangBrowser",
+            Path("/snap/bin/firefox"),
+            Path("/var/lib/flatpak/exports/bin/org.mozilla.firefox"),
         ]
-        for bin_name in ("yangbrowser", "firefox", "firefox-esr"):
-            found = shutil.which(bin_name)
-            if found:
-                linux_candidates.append(Path(found))
+        if os.name != "nt":
+            for bin_name in ("yangbrowser", "firefox", "firefox-esr"):
+                found = shutil.which(bin_name)
+                if found:
+                    linux_candidates.insert(2, Path(found))
 
         if os_name == "windows":
             exe_path = win_exe
@@ -262,15 +271,30 @@ def resolve_kernel_executable(
         Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
         Path("/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"),
         Path("/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"),
+        Path.home() / "Applications" / "Chromium.app" / "Contents" / "MacOS" / "Chromium",
+        Path.home() / "Applications" / "Google Chrome.app" / "Contents" / "MacOS" / "Google Chrome",
+        Path("/opt/homebrew/bin/chromium"),
+        Path("/usr/local/bin/chromium"),
     ]
     linux_candidates = [
         tae_dir / "taebrowser",
         tae_dir / "TaeBrowser",
+        Path("/snap/bin/chromium"),
+        Path("/var/lib/flatpak/exports/bin/org.chromium.Chromium"),
     ]
-    for bin_name in ("taebrowser", "chromium", "chromium-browser", "google-chrome", "google-chrome-stable", "microsoft-edge"):
-        found = shutil.which(bin_name)
-        if found:
-            linux_candidates.append(Path(found))
+    if os.name != "nt":
+        for bin_name in (
+            "taebrowser",
+            "chromium",
+            "chromium-browser",
+            "google-chrome",
+            "google-chrome-stable",
+            "brave-browser",
+            "microsoft-edge",
+        ):
+            found = shutil.which(bin_name)
+            if found:
+                linux_candidates.insert(2, Path(found))
 
     if os_name == "windows":
         exe_path = win_exe
@@ -292,6 +316,32 @@ def resolve_kernel_executable(
         "executable_exists": exe_path.is_file(),
         "webdriver": str(drv_path) if drv_path and drv_path.is_file() else None,
     }
+
+
+def build_process_spawn_command(
+    executable: str,
+    args: List[str],
+    host_os: Optional[str] = None,
+) -> List[str]:
+    """
+    Constructs the actual OS process spawn argv list.
+    On macOS and Linux, if the resolved kernel executable is a Windows PE `.exe`
+    (`TaeBrowser.exe` / `YangBrowser.exe`), automatically wraps it with `wine64` / `wine`
+    when available, or raises a descriptive error guiding native browser installation.
+    """
+    os_name = normalize_host_os(host_os)
+    exe_str = str(executable)
+    if os_name in ("macos", "linux") and exe_str.lower().endswith(".exe"):
+        if os.name != "nt":
+            wine_bin = shutil.which("wine64") or shutil.which("wine")
+            if wine_bin:
+                return [wine_bin, exe_str] + list(args)
+            raise RuntimeError(
+                f"Cannot execute Windows PE binary '{Path(exe_str).name}' directly on {os_name} "
+                f"without Wine or a native browser. Please install Chromium/Chrome or Firefox "
+                f"(or install wine64)."
+            )
+    return [exe_str] + list(args)
 
 
 def terminate_process_cross_platform(

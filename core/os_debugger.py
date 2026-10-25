@@ -177,7 +177,7 @@ class CrossPlatformDebugger:
         # 4. Ensure at least default profiles exist in SQLite DB
         profiles = self.db.list_profiles()
         if not profiles:
-            self.db._seed_initial_profiles_if_empty()
+            self.db._seed_defaults_if_empty()
             repairs.append("Reseeded default profiles in SQLite database")
 
         return repairs

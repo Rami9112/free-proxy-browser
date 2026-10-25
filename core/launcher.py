@@ -29,6 +29,7 @@ from .fingerprint import (
 )
 from .kernels import discover_kernels
 from .platform_compat import (
+    build_process_spawn_command,
     detect_host_platform,
     format_command_line,
     resolve_angle_flags,
@@ -351,8 +352,9 @@ class BrowserLauncher:
         full_env = os.environ.copy()
         full_env.update(plan["env"])
 
+        spawn_argv = build_process_spawn_command(plan["executable"], plan["args"])
         proc = subprocess.Popen(
-            [plan["executable"]] + plan["args"],
+            spawn_argv,
             cwd=str(Path(plan["executable"]).parent),
             env=full_env,
             stdout=subprocess.PIPE,
