@@ -359,26 +359,27 @@ def terminate_process_cross_platform(
             return
 
         if os_name == "windows" and os.name == "nt":
-            # 1. Request graceful close (WM_CLOSE) via taskkill without /F
-            subprocess.run(
-                ["taskkill", "/PID", str(os_pid)],
-                capture_output=True,
-                timeout=3,
-                creationflags=get_subprocess_creationflags("windows"),
-            )
-            deadline = time.time() + 3.0
-            while time.time() < deadline:
-                if proc.poll() is not None:
-                    return
-                time.sleep(0.15)
-            # 2. Force-kill process tree if still alive
+            # 1. Request graceful close (WM_CLOSE) via taskkill without /F if parent is still running
             if proc.poll() is None:
                 subprocess.run(
-                    ["taskkill", "/F", "/T", "/PID", str(os_pid)],
+                    ["taskkill", "/PID", str(os_pid)],
                     capture_output=True,
-                    timeout=5,
+                    timeout=3,
                     creationflags=get_subprocess_creationflags("windows"),
                 )
+                deadline = time.time() + 2.0
+                while time.time() < deadline:
+                    if proc.poll() is not None:
+                        break
+                    time.sleep(0.1)
+            # 2. Always force-kill the process tree (/F /T) so no orphaned child renderer/crashhelper
+            # holds Gecko parent.lock or Chromium SingletonLock when relaunching immediately.
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(os_pid)],
+                capture_output=True,
+                timeout=5,
+                creationflags=get_subprocess_creationflags("windows"),
+            )
         else:
             # POSIX (macOS / Linux): SIGTERM first, wait up to 3.0s, then SIGKILL
             try:
@@ -399,6 +400,11 @@ def terminate_process_cross_platform(
     except Exception:
         try:
             proc.kill()
+        except Exception:
+            pass
+    finally:
+        try:
+            proc.wait(timeout=2)
         except Exception:
             pass
 

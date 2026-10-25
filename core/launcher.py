@@ -342,11 +342,20 @@ class BrowserLauncher:
         devtools_port_file = profile_dir / "DevToolsActivePort"
         marionette_port_file = profile_dir / "MarionetteActivePort"
         bidi_server_file = profile_dir / "WebDriverBiDiServer.json"
+        parent_lock_file = profile_dir / "parent.lock"
+        singleton_lock_file = profile_dir / "SingletonLock"
 
-        # Remove stale handshake files before launch
-        for f in (browser_msg_file, devtools_port_file, marionette_port_file, bidi_server_file):
+        # Remove stale handshake and lock files before launch
+        for f in (
+            browser_msg_file,
+            devtools_port_file,
+            marionette_port_file,
+            bidi_server_file,
+            parent_lock_file,
+            singleton_lock_file,
+        ):
             try:
-                if f.is_file():
+                if f.is_file() or f.is_symlink():
                     f.unlink()
             except Exception:
                 pass
@@ -396,11 +405,11 @@ class BrowserLauncher:
                     m = re.search(r"MainWindowHandle=(\S+)", s)
                     if m:
                         session_info["window_handle"] = m.group(1)
-                if "DevTools listening on " in s:
-                    m = re.search(r"DevTools listening on (ws://\S+)", s)
+                if "DevTools listening on " in s or "WebDriver BiDi listening on " in s:
+                    m = re.search(r"listening on (ws://\S+)", s)
                     if m:
                         session_info["debug_link"] = m.group(1)
-                        pm = re.search(r":(\d+)/", session_info["debug_link"])
+                        pm = re.search(r":(\d+)", session_info["debug_link"])
                         if pm:
                             session_info["debug_port"] = int(pm.group(1))
                 if "MarionettePort on " in s or "Marionette\tINFO\tListening on port " in s:
