@@ -20,6 +20,8 @@ from .database import FreeAntiDatabase
 from .extension_builder import compute_chrome_validation_headers
 from .fingerprint import COUNTRY_LOCALE_MAP, GPU_CATALOG, check_proxy_and_resolve_geo
 from .launcher import BrowserLauncher
+from .os_debugger import CrossPlatformDebugger
+from .platform_compat import SUPPORTED_ARCHES, SUPPORTED_HOST_OSES, detect_host_platform
 
 
 class FreeAntiRequestHandler(BaseHTTPRequestHandler):
@@ -139,11 +141,37 @@ class FreeAntiRequestHandler(BaseHTTPRequestHandler):
                     "ok": True,
                     "app": "Free Proxy Browser",
                     "version": "2.1.0",
+                    "platform": detect_host_platform(),
                     "kernels": self.launcher.kernels_info,
                     "active_profiles": self.launcher.list_active_profiles(),
                     "profile_count": len(self.db.list_profiles()),
                 }
             )
+            return
+
+        if path == "/api/freeanti/platform":
+            matrix = [
+                detect_host_platform(override_os=h_os, override_arch=h_arch)
+                for h_os in SUPPORTED_HOST_OSES
+                for h_arch in SUPPORTED_ARCHES
+            ]
+            self._send_json(
+                {
+                    "ok": True,
+                    "current": detect_host_platform(),
+                    "matrix": matrix,
+                }
+            )
+            return
+
+        if path == "/api/freeanti/os-debug":
+            base_dir = self.ui_dir.parent
+            dbg = CrossPlatformDebugger(base_dir, self.launcher.data_dir, self.db, self.launcher)
+            if q.get("run") in ("1", "true"):
+                report = dbg.run_single_cycle(cycle_number=1, live_spawn=q.get("live") in ("1", "true"))
+                self._send_json({"ok": True, "status": dbg.get_status(), "report": report})
+                return
+            self._send_json({"ok": True, "status": dbg.get_status()})
             return
 
         if path == "/api/freeanti/profiles":
@@ -381,6 +409,16 @@ class FreeAntiRequestHandler(BaseHTTPRequestHandler):
                 country_hint=body.get("country") or "US",
             )
             self._send_json({"ok": True, "resolved": res})
+            return
+
+        if path == "/api/freeanti/os-debug/run":
+            base_dir = self.ui_dir.parent
+            dbg = CrossPlatformDebugger(base_dir, self.launcher.data_dir, self.db, self.launcher)
+            report = dbg.run_single_cycle(
+                cycle_number=int(body.get("cycle") or 1),
+                live_spawn=bool(body.get("live_spawn", False)),
+            )
+            self._send_json({"ok": True, "report": report, "status": dbg.get_status()})
             return
 
         if path == "/api/freeanti/groups":
