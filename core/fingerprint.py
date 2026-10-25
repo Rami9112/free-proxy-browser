@@ -12,8 +12,11 @@ import hashlib
 import json
 import random
 import re
+import socket
+import struct
 import subprocess
 import time
+import urllib.parse
 import urllib.request
 import uuid
 from pathlib import Path
@@ -994,6 +997,96 @@ def parse_proxy_string(raw: str, default_type: str = "socks5") -> Dict[str, Any]
     }
 
 
+def _recv_exact(sock: socket.socket, n: int) -> bytes:
+    buf = bytearray()
+    while len(buf) < n:
+        chunk = sock.recv(n - len(buf))
+        if not chunk:
+            raise ConnectionError("Unexpected EOF from proxy socket")
+        buf.extend(chunk)
+    return bytes(buf)
+
+
+def _tunnel_http_get_pure_python(
+    ptype: str,
+    phost: str,
+    pport: int,
+    puser: str = "",
+    ppass: str = "",
+    target_host: str = "ip-api.com",
+    target_port: int = 80,
+    target_path: str = "/json/",
+    timeout: float = 5.0,
+) -> Optional[str]:
+    """
+    Zero-dependency pure-Python SOCKS5 (RFC 1928 + RFC 1929 auth + remote DNS ATYP=0x03)
+    and HTTP proxy client fallback. Ensures proxy GeoIP tunneling works on all OSes and
+    architectures even when external `curl` is unavailable.
+    """
+    scheme = (ptype or "socks5").strip().lower()
+    if scheme in ("http", "https"):
+        auth_str = f"{urllib.parse.quote(puser)}:{urllib.parse.quote(ppass)}@" if puser else ""
+        proxy_url = f"{scheme}://{auth_str}{phost}:{pport}"
+        handler = urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url})
+        opener = urllib.request.build_opener(handler)
+        url = f"http://{target_host}:{target_port}{target_path}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Connection": "close"})
+        with opener.open(req, timeout=timeout) as resp:
+            return resp.read().decode("utf-8", errors="ignore")
+
+    # SOCKS5 / SOCKS5h protocol (RFC 1928 & RFC 1929)
+    with socket.create_connection((phost, int(pport)), timeout=timeout) as sock:
+        sock.settimeout(timeout)
+        if puser:
+            sock.sendall(b"\x05\x02\x00\x02")
+        else:
+            sock.sendall(b"\x05\x01\x00")
+        ver, method = _recv_exact(sock, 2)
+        if ver != 5 or method == 0xFF:
+            raise PermissionError("SOCKS5 proxy rejected authentication methods")
+        if method == 0x02:
+            u_bytes = puser.encode("utf-8")[:255]
+            p_bytes = ppass.encode("utf-8")[:255]
+            sock.sendall(b"\x01" + bytes([len(u_bytes)]) + u_bytes + bytes([len(p_bytes)]) + p_bytes)
+            auth_ver, auth_status = _recv_exact(sock, 2)
+            if auth_status != 0x00:
+                raise PermissionError(f"SOCKS5 RFC 1929 auth failed with status {auth_status}")
+
+        host_bytes = target_host.encode("idna")[:255]
+        req_pkt = b"\x05\x01\x00\x03" + bytes([len(host_bytes)]) + host_bytes + struct.pack(">H", int(target_port))
+        sock.sendall(req_pkt)
+        r_ver, r_rep, _r_rsv, r_atyp = _recv_exact(sock, 4)
+        if r_ver != 5 or r_rep != 0x00:
+            raise ConnectionError(f"SOCKS5 CONNECT failed with reply code {r_rep}")
+        if r_atyp == 0x01:
+            _recv_exact(sock, 4 + 2)
+        elif r_atyp == 0x03:
+            d_len = _recv_exact(sock, 1)[0]
+            _recv_exact(sock, d_len + 2)
+        elif r_atyp == 0x04:
+            _recv_exact(sock, 16 + 2)
+
+        http_req = (
+            f"GET {target_path} HTTP/1.1\r\n"
+            f"Host: {target_host}\r\n"
+            f"User-Agent: Mozilla/5.0\r\n"
+            f"Accept: application/json\r\n"
+            f"Connection: close\r\n\r\n"
+        ).encode("ascii")
+        sock.sendall(http_req)
+
+        raw_resp = bytearray()
+        while len(raw_resp) < 65536:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            raw_resp.extend(chunk)
+        resp_text = raw_resp.decode("utf-8", errors="ignore")
+        if "\r\n\r\n" in resp_text:
+            return resp_text.split("\r\n\r\n", 1)[1].strip()
+        return resp_text.strip()
+
+
 def check_proxy_and_resolve_geo(
     proxy: Optional[Dict[str, Any]] = None,
     target_ip: Optional[str] = None,
@@ -1033,12 +1126,13 @@ def check_proxy_and_resolve_geo(
     country_code = (country_hint or prx.get("country") or "").strip().upper()
     fields_qs = "fields=status,country,countryCode,regionName,city,lat,lon,timezone,isp,query"
 
-    # 1. Live tunnel check through configured SOCKS5 / HTTP proxy via system curl
+    # 1. Live tunnel check through configured SOCKS5 / HTTP proxy via system curl or pure-Python fallback
     if ptype in ("socks5", "http", "https") and phost and pport > 0 and not target_ip:
         curl_scheme = "socks5h" if ptype == "socks5" else ptype
         auth_part = f"{puser}:{ppass}@" if puser else ""
         proxy_url = f"{curl_scheme}://{auth_part}{phost}:{pport}"
         curl_bin = resolve_curl_executable()
+        raw_json_str = ""
         try:
             proc = subprocess.run(
                 [
@@ -1056,7 +1150,32 @@ def check_proxy_and_resolve_geo(
                 creationflags=get_subprocess_creationflags(),
             )
             if proc.returncode == 0 and proc.stdout.strip():
-                data = json.loads(proc.stdout.strip())
+                raw_json_str = proc.stdout.strip()
+        except Exception:
+            pass
+
+        if not raw_json_str:
+            try:
+                raw_json_str = (
+                    _tunnel_http_get_pure_python(
+                        ptype=ptype,
+                        phost=phost,
+                        pport=pport,
+                        puser=puser,
+                        ppass=ppass,
+                        target_host="ip-api.com",
+                        target_port=80,
+                        target_path=f"/json/?{fields_qs}",
+                        timeout=5.0,
+                    )
+                    or ""
+                )
+            except Exception:
+                raw_json_str = ""
+
+        if raw_json_str:
+            try:
+                data = json.loads(raw_json_str)
                 if data.get("status") == "success":
                     cc = str(data.get("countryCode") or country_code or "US").upper()
                     base_locale = resolve_country_locale(cc, data.get("query", ""))
@@ -1064,7 +1183,7 @@ def check_proxy_and_resolve_geo(
                     return {
                         "ok": True,
                         "source": "proxy_tunnel_geoip",
-                        "exit_ip": str(data.get("query") or ip_to_check or "211.234.120.45"),
+                        "exit_ip": str(data.get("query") or ip_to_check or "198.51.100.77"),
                         "country_code": cc,
                         "country_name": f"{data.get('country', '')} ({data.get('city', '')})".strip(),
                         "timezone": tz,
@@ -1075,8 +1194,8 @@ def check_proxy_and_resolve_geo(
                         "longitude": float(data.get("lon") or base_locale["longitude"]),
                         "isp": str(data.get("isp") or ""),
                     }
-        except Exception:
-            pass
+            except Exception:
+                pass
 
     # 2. Direct GeoIP lookup if a public IP is provided or if direct connection check is requested
     query_target = ip_to_check if ip_to_check and not ip_to_check.startswith(("127.", "192.168.", "10.", "198.51.100.")) else ""
@@ -1130,10 +1249,12 @@ def build_default_user_agent(
     os_platform: str,
     chromium_version: str = "153.0.8010.27",
     gecko_version: str = "153.0",
+    cpu_arch: Optional[str] = None,
 ) -> Tuple[str, Dict[str, Any]]:
     major_chrome = chromium_version.split(".")[0] if chromium_version else "153"
     major_gecko = gecko_version.split(".")[0] if gecko_version else "153"
     ktype = normalize_kernel_name(kernel_type)
+    norm_cpu = (cpu_arch or "").strip().lower()
 
     if ktype == "yangbrowser":
         if os_platform == "macOS":
@@ -1141,15 +1262,16 @@ def build_default_user_agent(
             platform_nav = "MacIntel"
             platform_ch = "macOS"
             platform_ver = "14.5.0"
-            arch = "arm"
+            arch = "x86" if norm_cpu in ("x64", "x86", "amd64") else "arm"
             mobile = "0"
             model = ""
         elif os_platform == "Linux":
-            ua = f"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:{major_gecko}.0) Gecko/20100101 Firefox/{major_gecko}.0"
-            platform_nav = "Linux x86_64"
+            linux_token = "Linux aarch64" if norm_cpu in ("arm64", "aarch64") else ("Linux i686" if norm_cpu == "x86" else "Linux x86_64")
+            ua = f"Mozilla/5.0 (X11; Ubuntu; {linux_token}; rv:{major_gecko}.0) Gecko/20100101 Firefox/{major_gecko}.0"
+            platform_nav = linux_token
             platform_ch = "Linux"
             platform_ver = "6.8.0"
-            arch = "x86"
+            arch = "arm" if norm_cpu in ("arm64", "aarch64") else "x86"
             mobile = "0"
             model = ""
         elif os_platform == "Android":
@@ -1169,11 +1291,12 @@ def build_default_user_agent(
             mobile = "1"
             model = "iPhone"
         else:
-            ua = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_gecko}.0) Gecko/20100101 Firefox/{major_gecko}.0"
+            win_tok = "WOW64" if norm_cpu == "x86" else "Win64; x64"
+            ua = f"Mozilla/5.0 (Windows NT 10.0; {win_tok}; rv:{major_gecko}.0) Gecko/20100101 Firefox/{major_gecko}.0"
             platform_nav = "Win32"
             platform_ch = "Windows"
             platform_ver = "15.0.0"
-            arch = "x86"
+            arch = "arm" if norm_cpu in ("arm64", "aarch64") else "x86"
             mobile = "0"
             model = ""
     else:
@@ -1182,15 +1305,16 @@ def build_default_user_agent(
             platform_nav = "MacIntel"
             platform_ch = "macOS"
             platform_ver = "14.5.0"
-            arch = "arm"
+            arch = "x86" if norm_cpu in ("x64", "x86", "amd64") else "arm"
             mobile = "0"
             model = ""
         elif os_platform == "Linux":
-            ua = f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_chrome}.0.0.0 Safari/537.36"
-            platform_nav = "Linux x86_64"
+            linux_token = "Linux aarch64" if norm_cpu in ("arm64", "aarch64") else ("Linux i686" if norm_cpu == "x86" else "Linux x86_64")
+            ua = f"Mozilla/5.0 (X11; {linux_token}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_chrome}.0.0.0 Safari/537.36"
+            platform_nav = linux_token
             platform_ch = "Linux"
             platform_ver = "6.8.0"
-            arch = "x86"
+            arch = "arm" if norm_cpu in ("arm64", "aarch64") else "x86"
             mobile = "0"
             model = ""
         elif os_platform == "Android":
@@ -1210,14 +1334,17 @@ def build_default_user_agent(
             mobile = "1"
             model = "iPhone"
         else:
-            ua = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_chrome}.0.0.0 Safari/537.36"
+            win_tok = "WOW64" if norm_cpu == "x86" else "Win64; x64"
+            ua = f"Mozilla/5.0 (Windows NT 10.0; {win_tok}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_chrome}.0.0.0 Safari/537.36"
             platform_nav = "Win32"
             platform_ch = "Windows"
             platform_ver = "15.0.0"
-            arch = "x86"
+            arch = "arm" if norm_cpu in ("arm64", "aarch64") else "x86"
             mobile = "0"
             model = ""
 
+    bitness = "32" if norm_cpu == "x86" else "64"
+    wow64 = "1" if (os_platform == "Windows" and norm_cpu == "x86") else "0"
     client_hints = {
         "platform": platform_ch,
         "platform_navigator": platform_nav,
@@ -1225,9 +1352,9 @@ def build_default_user_agent(
         "architecture": arch,
         "model": model,
         "mobile": mobile,
-        "wow64": "0",
+        "wow64": wow64,
         "ua_full_version": chromium_version,
-        "bitness": "64",
+        "bitness": bitness,
     }
     return ua, client_hints
 
@@ -1369,10 +1496,16 @@ def build_fake_fonts_map(os_platform: str) -> Dict[str, str]:
     return {}
 
 
-def build_firefox_prefs_js(existing_content: str, fp: Dict[str, Any], resolved_langs: List[str]) -> str:
+def build_firefox_prefs_js(
+    existing_content: str,
+    fp: Dict[str, Any],
+    resolved_langs: List[str],
+    proxy: Optional[Dict[str, Any]] = None,
+) -> str:
     """
-    Builds `prefs.js` for YangBrowser 153 (`xul.dll`), including Navigator OS emulation,
-    WebGL/OpenGL vendor & renderer overrides, WebGPU toggle, and proxy-matched Accept-Language.
+    Builds `prefs.js` for YangBrowser 153 (`xul.dll`) and cross-OS Gecko browsers,
+    including Navigator OS emulation, WebGL/OpenGL vendor & renderer overrides,
+    WebGPU toggle, proxy-matched Accept-Language, and native Gecko proxy preferences.
     """
     lines = [
         line
@@ -1402,6 +1535,16 @@ def build_firefox_prefs_js(existing_content: str, fp: Dict[str, Any], resolved_l
                 "browser.sessionstore.restore_on_demand",
                 "privacy.sanitize.sanitizeOnShutdown",
                 "network.cookie.lifetimePolicy",
+                "network.proxy.type",
+                "network.proxy.socks",
+                "network.proxy.socks_port",
+                "network.proxy.socks_version",
+                "network.proxy.socks_remote_dns",
+                "network.proxy.http",
+                "network.proxy.http_port",
+                "network.proxy.ssl",
+                "network.proxy.ssl_port",
+                "network.proxy.share_proxy_settings",
             ]
         )
     ]
@@ -1470,6 +1613,27 @@ def build_firefox_prefs_js(existing_content: str, fp: Dict[str, Any], resolved_l
 
     if fp.get("webrtc_mode") == "disabled":
         add_pref("media.peerconnection.enabled", False)
+
+    if proxy:
+        ptype = str(proxy.get("type") or "direct").strip().lower()
+        phost = str(proxy.get("host") or "").strip()
+        try:
+            pport = int(proxy.get("port") or 0)
+        except (ValueError, TypeError):
+            pport = 0
+        if ptype == "socks5" and phost and pport > 0:
+            add_pref("network.proxy.type", 1)
+            add_pref("network.proxy.socks", phost)
+            add_pref("network.proxy.socks_port", pport)
+            add_pref("network.proxy.socks_version", 5)
+            add_pref("network.proxy.socks_remote_dns", True)
+        elif ptype in ("http", "https") and phost and pport > 0:
+            add_pref("network.proxy.type", 1)
+            add_pref("network.proxy.http", phost)
+            add_pref("network.proxy.http_port", pport)
+            add_pref("network.proxy.ssl", phost)
+            add_pref("network.proxy.ssl_port", pport)
+            add_pref("network.proxy.share_proxy_settings", True)
 
     return "\n".join(lines) + "\n"
 
@@ -1810,7 +1974,7 @@ def compile_profile_configs(
                 existing_prefs = prefs_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 pass
-        firefox_prefs_content = build_firefox_prefs_js(existing_prefs, fp, effective_langs)
+        firefox_prefs_content = build_firefox_prefs_js(existing_prefs, fp, effective_langs, proxy=proxy)
         if write_files:
             prefs_file.write_text(firefox_prefs_content, encoding="utf-8")
             (profile_dir / "user.js").write_text(firefox_prefs_content, encoding="utf-8")

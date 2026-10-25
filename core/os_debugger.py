@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import stat
 import tempfile
 import threading
@@ -25,6 +26,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from .database import FreeAntiDatabase
 from .extension_builder import compute_chrome_validation_headers, ensure_freeanti_extension
 from .fingerprint import (
+    _tunnel_http_get_pure_python,
     adspower_decode_base64,
     build_default_user_agent,
     compute_audio_noise,
@@ -181,6 +183,86 @@ class CrossPlatformDebugger:
             repairs.append("Reseeded default profiles in SQLite database")
 
         return repairs
+
+    def _verify_local_socks5_rfc1929_tunnel(self) -> bool:
+        """
+        Spawns an ephemeral loopback SOCKS5 server requiring RFC 1929 username/password
+        authentication and ATYP=0x03 domain CONNECT, and verifies `_tunnel_http_get_pure_python`.
+        """
+        srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.bind(("127.0.0.1", 0))
+        srv.listen(1)
+        port = srv.getsockname()[1]
+
+        def _mock_socks5_worker() -> None:
+            try:
+                srv.settimeout(3.0)
+                conn, _ = srv.accept()
+                with conn:
+                    conn.settimeout(3.0)
+                    # 1. Greeting: \x05 \x02 \x00 \x02
+                    hdr = conn.recv(4)
+                    if not hdr or hdr[0] != 5:
+                        return
+                    conn.sendall(b"\x05\x02")  # Select RFC 1929 username/password auth
+                    # 2. Auth packet: \x01 <ulen> <user> <plen> <pass>
+                    auth_hdr = conn.recv(2)
+                    ulen = auth_hdr[1]
+                    user = conn.recv(ulen).decode("utf-8")
+                    plen = conn.recv(1)[0]
+                    pw = conn.recv(plen).decode("utf-8")
+                    if user != "dbg_user" or pw != "dbg_pass":
+                        conn.sendall(b"\x01\x01")
+                        return
+                    conn.sendall(b"\x01\x00")
+                    # 3. CONNECT request: \x05 \x01 \x00 \x03 <dlen> <domain> <port_hi> <port_lo>
+                    req_hdr = conn.recv(5)
+                    dlen = req_hdr[4]
+                    _domain = conn.recv(dlen + 2)
+                    conn.sendall(b"\x05\x00\x00\x01\x7f\x00\x00\x01\x00\x50")
+                    # 4. Read HTTP request and return mock GeoIP JSON
+                    _http_in = conn.recv(1024)
+                    body = '{"status":"success","countryCode":"US","query":"198.51.100.99"}'
+                    resp = (
+                        "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: application/json\r\n"
+                        f"Content-Length: {len(body)}\r\n"
+                        "Connection: close\r\n\r\n"
+                        + body
+                    )
+                    conn.sendall(resp.encode("utf-8"))
+            except Exception:
+                pass
+            finally:
+                try:
+                    srv.close()
+                except Exception:
+                    pass
+
+        t = threading.Thread(target=_mock_socks5_worker, daemon=True)
+        t.start()
+        try:
+            out = _tunnel_http_get_pure_python(
+                ptype="socks5",
+                phost="127.0.0.1",
+                pport=port,
+                puser="dbg_user",
+                ppass="dbg_pass",
+                target_host="ip-api.com",
+                target_port=80,
+                target_path="/json/",
+                timeout=3.0,
+            )
+            data = json.loads(out or "{}")
+            return data.get("status") == "success" and data.get("query") == "198.51.100.99"
+        except Exception:
+            return False
+        finally:
+            try:
+                srv.close()
+            except Exception:
+                pass
 
     def run_single_cycle(
         self,
@@ -402,6 +484,48 @@ class CrossPlatformDebugger:
                     ok_cc,
                     f"tz={loc['timezone']}, ui_lang={loc['ui_language']}",
                 )
+
+            # Phase 4b: Multi-Arch User-Agent & ClientHints + Gecko prefs.js Proxy Config + Pure-Python SOCKS5 RFC1929 Tunnel
+            for test_os in ("Windows", "macOS", "Linux"):
+                for test_arch in SUPPORTED_ARCHES:
+                    ua_str, ch_meta = build_default_user_agent("taebrowser", test_os, cpu_arch=test_arch)
+                    expected_bit = "32" if test_arch == "x86" else "64"
+                    expected_ch_arch = "arm" if test_arch == "arm64" else "x86"
+                    ok_ua_arch = (
+                        ch_meta["bitness"] == expected_bit
+                        and ch_meta["architecture"] == expected_ch_arch
+                        and len(ua_str) > 30
+                    )
+                    record_check(
+                        f"ua_client_hints[{test_os}:{test_arch}]",
+                        ok_ua_arch,
+                        f"arch={ch_meta['architecture']}, bitness={ch_meta['bitness']}",
+                    )
+
+            # Verify Gecko prefs.js native SOCKS5 proxy injection
+            yang_prx_plan = self.launcher.build_launch_plan(
+                {
+                    "id": "dbg_yang_prx",
+                    "serial_number": 960,
+                    "name": "Yang SOCKS5 Prefs Test",
+                    "kernel_type": "yangbrowser",
+                    "os_platform": "Linux",
+                    "proxy": {"type": "socks5", "host": "127.0.0.1", "port": 1080},
+                    "fingerprint": {"os_platform": "Linux"},
+                },
+                write_files=False,
+            )
+            f_prefs = yang_prx_plan["compiled"]["firefoxPrefsJs"]
+            ok_gecko_prx = (
+                'user_pref("network.proxy.type", 1);' in f_prefs
+                and 'user_pref("network.proxy.socks", "127.0.0.1");' in f_prefs
+                and 'user_pref("network.proxy.socks_remote_dns", true);' in f_prefs
+            )
+            record_check("gecko_prefs_proxy[socks5]", ok_gecko_prx, "network.proxy.socks_remote_dns=true")
+
+            # Verify pure-Python SOCKS5 RFC 1928 + RFC 1929 tunnel over loopback socket
+            ok_socks5_tunnel = self._verify_local_socks5_rfc1929_tunnel()
+            record_check("pure_python_socks5_rfc1929", ok_socks5_tunnel, "SOCKS5 auth + ATYP=0x03 HTTP tunnel")
 
         # Phase 5: Optional Live Browser Headless Spawn Check on Real Host
         live_spawn_results: Dict[str, Any] = {}
