@@ -1543,7 +1543,9 @@ def compile_profile_configs(
 
     # UI Language (`--lang`) resolution (`follow_proxy_ui_language`)
     if fp.get("follow_proxy_ui_language", False):
-        effective_ui_lang = effective_langs[0] if effective_langs else proxy_locale["ui_language"]
+        effective_ui_lang = str(
+            proxy_locale.get("ui_language") or (effective_langs[0] if effective_langs else "en-US")
+        )
     else:
         effective_ui_lang = str(fp.get("ui_language") or (effective_langs[0] if effective_langs else "en-US"))
 
