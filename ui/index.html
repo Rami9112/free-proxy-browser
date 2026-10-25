@@ -678,6 +678,9 @@
           <span class="dot ok"></span>
           <span>Active Browsers: <strong style="color:#34d399" id="active-browser-count">0</strong></span>
         </div>
+        <div class="status-chip mono" id="host-platform-chip">
+          Host: Multi-OS
+        </div>
         <div class="status-chip mono">
           Local API: 127.0.0.1:50325
         </div>
@@ -1279,6 +1282,7 @@ print("Connected to:", driver.title)</pre>
         <div class="panel-box">
           <div class="panel-title">
             <span>🟦 TaeBrowser 153 &amp; 🟪 YangBrowser 153 Kernel Binaries</span>
+            <button class="btn btn-sm btn-primary" onclick="runOsDiagnosticCycleUI()">🧪 Verify All OS &amp; Arch</button>
           </div>
           <div class="kv-list" id="kernels-detail-box"></div>
         </div>
@@ -1912,6 +1916,10 @@ print("Connected to:", driver.title)</pre>
       const yang = STATE.kernels.default_yangbrowser;
       if (tae) document.getElementById("side-tae-ver").textContent = `v${tae.chromium_version}`;
       if (yang) document.getElementById("side-yang-ver").textContent = `v${yang.gecko_version}`;
+      if (res.platform && res.platform.platform_tag) {
+        const chip = document.getElementById("host-platform-chip");
+        if (chip) chip.textContent = `Host: ${res.platform.platform_tag.toUpperCase()}`;
+      }
     }
 
     async function loadGroups() {
@@ -2453,11 +2461,33 @@ print("Connected to:", driver.title)</pre>
       `;
     }
 
+    async function runOsDiagnosticCycleUI() {
+      showToast("🧪 Running 93-check Cross-OS & Multi-Arch Verification Matrix...");
+      const res = await fetch("/api/freeanti/os-debug/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cycle: 1, live_spawn: false }),
+      }).then(r => r.json());
+      if (res.ok && res.report) {
+        const rep = res.report;
+        showToast(`✅ Cross-OS Matrix: ${rep.passed}/${rep.checks_run} checks passed (${rep.elapsed_ms}ms)`);
+        await loadKernelsAndLogs();
+      }
+    }
+
     async function loadKernelsAndLogs() {
       await loadStatus();
       const tae = STATE.kernels.default_taebrowser || {};
       const yang = STATE.kernels.default_yangbrowser || {};
+      const plat = (STATE.kernels && STATE.kernels.platform) || {};
+      const dbgRes = await fetch("/api/freeanti/os-debug").then(r => r.json()).catch(() => ({}));
+      const lastRep = (dbgRes.status && dbgRes.status.last_cycle_report) || {};
+      const dbgSummary = lastRep.checks_run
+        ? `${lastRep.passed}/${lastRep.checks_run} PASS (${lastRep.elapsed_ms}ms)`
+        : "Ready";
       document.getElementById("kernels-detail-box").innerHTML = `
+        <div class="kv-row"><span class="kv-key">🖥️ Active Host OS / Arch</span><span class="kv-val mono" style="color:#34d399">${(plat.platform_tag || "windows-x64").toUpperCase()} (Python ${plat.python_version || ""} ${plat.python_bits || 64}-bit)</span></div>
+        <div class="kv-row"><span class="kv-key">♾️ Cross-OS Matrix Status</span><span class="kv-val mono" style="color:#38bdf8">${dbgSummary} · Win/macOS/Linux × x64/ARM64/x86</span></div>
         <div class="kv-row"><span class="kv-key">🟦 TaeBrowser 153 Executable</span><span class="kv-val mono" style="color:var(--tae)">${tae.executable || "-"}</span></div>
         <div class="kv-row"><span class="kv-key">🟦 TaeBrowser Chromium Version</span><span class="kv-val mono">${tae.chromium_version || "-"}</span></div>
         <div class="kv-row"><span class="kv-key">🟦 TaeBrowser ChromeDriver</span><span class="kv-val mono">${tae.webdriver || "-"}</span></div>
