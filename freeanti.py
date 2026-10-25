@@ -39,6 +39,13 @@ from core.fingerprint import (
     normalize_kernel_name,
 )
 from core.launcher import BrowserLauncher
+from core.os_debugger import CrossPlatformDebugger
+from core.platform_compat import (
+    SUPPORTED_ARCHES,
+    SUPPORTED_HOST_OSES,
+    detect_host_platform,
+    launch_desktop_gui_cross_platform,
+)
 from core.server import create_http_server
 
 
@@ -58,11 +65,9 @@ def _is_port_in_use(host: str, port: int) -> bool:
 
 def cmd_gui(args: argparse.Namespace) -> int:
     """
-    Launches the native Microsoft Edge WebView2 Desktop Application window (`freeanti.exe`),
-    backed by the embedded Local API & Control Server on 127.0.0.1:50325.
+    Launches the Free Proxy Browser Desktop Application window across Windows, macOS, and Linux
+    (`x64`, `ARM64`, `x86`), backed by the embedded Local API & Control Server on 127.0.0.1:50325.
     """
-    import subprocess
-
     host = args.host or "127.0.0.1"
     port = args.port or 50325
     srv = None
@@ -74,20 +79,15 @@ def cmd_gui(args: argparse.Namespace) -> int:
         srv_thread = threading.Thread(target=srv.serve_forever, daemon=True)
         srv_thread.start()
 
-    exe_path = BASE_DIR / "FreeProxyBrowser.exe"
-    if not exe_path.is_file():
-        exe_path = BASE_DIR / "freeanti.exe"
     url = f"http://{host}:{port}/"
 
     try:
-        if exe_path.is_file():
-            proc = subprocess.Popen([str(exe_path)], cwd=str(BASE_DIR))
+        proc = launch_desktop_gui_cross_platform(url=url, base_dir=BASE_DIR)
+        if proc is not None:
             proc.wait()
-        else:
-            webbrowser.open(url)
-            if srv is not None:
-                while True:
-                    time.sleep(1.0)
+        elif srv is not None:
+            while True:
+                time.sleep(1.0)
     except KeyboardInterrupt:
         pass
     finally:
@@ -104,10 +104,15 @@ def cmd_status(args: argparse.Namespace) -> int:
     _, db, launcher = get_app_context(args.port)
     kernels = launcher.kernels_info
     profiles = db.list_profiles()
+    plat = detect_host_platform()
 
     print("=" * 80)
-    print("  Free Proxy Browser v2.1.0 — WebView2 Anti-Detect & Proxy Browser Engine Status")
+    print("  Free Proxy Browser v2.1.0 — Cross-OS & Multi-Arch Anti-Detect Engine Status")
     print("=" * 80)
+    print(
+        f"  Host Platform   : {plat['platform_tag']} "
+        f"(OS={plat['host_os']}, Arch={plat['host_arch']}, Python {plat['python_version']} {plat['python_bits']}-bit)"
+    )
     print(f"  Data Directory  : {BASE_DIR / 'data'}")
     print(f"  SQLite DB       : {BASE_DIR / 'data' / 'freeanti.db'} ({len(profiles)} profiles)")
     print(f"  Stealth Ext     : {launcher.freeanti_ext_dir}")
@@ -411,6 +416,15 @@ def cmd_test(args: argparse.Namespace) -> int:
 
         print("  [PASS] 7. HTTP Server + GPU Catalog + Local API v1 & v2 Compatibility verified")
 
+        # Test 8: Cross-OS & Cross-Architecture Compatibility Matrix (Windows/macOS/Linux x x64/ARM64/x86)
+        dbg = CrossPlatformDebugger(BASE_DIR, BASE_DIR / "data", db, launcher)
+        dbg_report = dbg.run_single_cycle(cycle_number=1, live_spawn=False)
+        assert dbg_report["all_passed"] is True, f"Cross-OS matrix failed: {dbg_report['failures']}"
+        print(
+            f"  [PASS] 8. Cross-OS & Multi-Arch Matrix Verified "
+            f"({dbg_report['passed']}/{dbg_report['checks_run']} checks across Windows/macOS/Linux x x64/ARM64/x86)"
+        )
+
         if args.launch_browsers:
             print("  [...] 8a. Testing real TaeBrowser 153 (TaeBrowser.exe) launch with --extended-parameters...")
             tb_session = launcher.start_profile("fa1001win", headless=True)
@@ -505,7 +519,91 @@ def build_parser() -> argparse.ArgumentParser:
     p_test = sub.add_parser("test", help="Run automated verification suite")
     p_test.add_argument("--launch-browsers", action="store_true", help="Also test spawning actual TaeBrowser.exe & YangBrowser.exe")
 
+    # platform
+    p_plat = sub.add_parser("platform", help="Inspect current and simulated cross-OS / cross-architecture runtime matrix")
+    p_plat.add_argument("--json", action="store_true", help="Output as JSON")
+
+    # debug-loop
+    p_dbg = sub.add_parser(
+        "debug-loop",
+        help="Run continuous infinite OS & CPU architecture debugging and self-healing loop",
+    )
+    p_dbg.add_argument("--interval", type=float, default=5.0, help="Seconds between debug cycles (default: 5.0)")
+    p_dbg.add_argument("--cycles", type=int, default=0, help="Max cycles to run (0 = infinite loop)")
+    p_dbg.add_argument(
+        "--live-every",
+        type=int,
+        default=0,
+        help="Spawn real headless TaeBrowser & YangBrowser every N cycles (0 = sidecar/matrix only)",
+    )
+
     return parser
+
+
+def cmd_platform(args: argparse.Namespace) -> int:
+    current = detect_host_platform()
+    matrix = [
+        detect_host_platform(override_os=h_os, override_arch=h_arch)
+        for h_os in SUPPORTED_HOST_OSES
+        for h_arch in SUPPORTED_ARCHES
+    ]
+    if getattr(args, "json", False):
+        print(json.dumps({"current": current, "matrix": matrix}, indent=2, ensure_ascii=False))
+        return 0
+    print("=" * 80)
+    print(f"  Active Host Platform : {current['platform_tag']} (Simulated={current['is_simulated']})")
+    print(f"  Python Runtime       : {current['python_version']} ({current['python_bits']}-bit)")
+    print(f"  System curl          : {current['curl_executable']}")
+    print("-" * 80)
+    for item in matrix:
+        print(
+            f"  [{item['platform_tag']:<13}] WebView/App={item['webview2_runtime_arch']:<13} "
+            f"| curl={item['curl_executable']}"
+        )
+    print("=" * 80)
+    return 0
+
+
+def cmd_debug_loop(args: argparse.Namespace) -> int:
+    data_dir, db, launcher = get_app_context(args.port)
+    dbg = CrossPlatformDebugger(BASE_DIR, data_dir, db, launcher)
+    plat = detect_host_platform()
+    cycles_label = "INFINITE" if args.cycles <= 0 else str(args.cycles)
+
+    print("=" * 84)
+    print("  ♾️  Free Proxy Browser — Cross-OS & Multi-Arch Infinite Debugging Loop")
+    print("=" * 84)
+    print(f"  Host Platform   : {plat['platform_tag']} (OS={plat['host_os']}, Arch={plat['host_arch']})")
+    print(f"  Target Matrix   : Windows / macOS / Linux × x64 / ARM64 / x86 (78 checks/cycle)")
+    print(f"  Loop Mode       : {cycles_label} cycles | Interval={args.interval}s | LiveSpawnEvery={args.live_every}")
+    print(f"  Status File     : {dbg.status_file}")
+    print(f"  Log File        : {dbg.log_file}")
+    print("-" * 84)
+
+    def _on_cycle(rep: Dict[str, Any]) -> None:
+        tag = "PASS" if rep["all_passed"] else f"FAIL({rep['failed']})"
+        live_str = ""
+        if rep.get("live_spawn"):
+            tb_ok = rep["live_spawn"].get("taebrowser", {}).get("ok")
+            yb_ok = rep["live_spawn"].get("yangbrowser", {}).get("ok")
+            live_str = f" | LiveSpawn(Tae={tb_ok}, Yang={yb_ok})"
+        print(
+            f"  [Cycle #{rep['cycle']:<4}] [{tag}] {rep['passed']}/{rep['checks_run']} checks "
+            f"| repairs={len(rep.get('repairs', []))} | {rep['elapsed_ms']}ms{live_str}",
+            flush=True,
+        )
+
+    try:
+        dbg.run_loop(
+            interval_sec=args.interval,
+            max_cycles=args.cycles,
+            live_spawn_every=args.live_every,
+            on_cycle=_on_cycle,
+        )
+    except KeyboardInterrupt:
+        dbg.stop()
+        print("\n[!] Stopping OS & Architecture debugging loop...")
+    return 0
 
 
 def main() -> int:
@@ -531,6 +629,10 @@ def main() -> int:
         return cmd_dynamic_update(args)
     if cmd == "test":
         return cmd_test(args)
+    if cmd == "platform":
+        return cmd_platform(args)
+    if cmd == "debug-loop":
+        return cmd_debug_loop(args)
     return cmd_serve(args)
 
 
