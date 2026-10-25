@@ -575,7 +575,7 @@ def cmd_debug_loop(args: argparse.Namespace) -> int:
     print("  ♾️  Free Proxy Browser — Cross-OS & Multi-Arch Infinite Debugging Loop")
     print("=" * 84)
     print(f"  Host Platform   : {plat['platform_tag']} (OS={plat['host_os']}, Arch={plat['host_arch']})")
-    print(f"  Target Matrix   : Windows / macOS / Linux × x64 / ARM64 / x86 (78 checks/cycle)")
+    print(f"  Target Matrix   : Windows / macOS / Linux × x64 / ARM64 / x86 (94–96 checks/cycle)")
     print(f"  Loop Mode       : {cycles_label} cycles | Interval={args.interval}s | LiveSpawnEvery={args.live_every}")
     print(f"  Status File     : {dbg.status_file}")
     print(f"  Log File        : {dbg.log_file}")

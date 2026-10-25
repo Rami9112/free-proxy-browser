@@ -23,6 +23,7 @@ from .fingerprint import (
     adspower_encode_base64,
     check_proxy_and_resolve_geo,
     compile_profile_configs,
+    format_proxy_host_port,
     md5_hex,
     normalize_kernel_name,
     parse_proxy_string,
@@ -172,6 +173,8 @@ class BrowserLauncher:
                 webdriver_path = resolved_k["webdriver"]
             env_vars["MOZ_CRASHREPORTER_NO_REPORT"] = "1"
             env_vars["MOZ_DISABLE_CONTENT_SANDBOX"] = "1"
+            env_vars["MOZ_NO_REMOTE"] = "1"
+            env_vars["MOZ_LEGACY_PROFILES"] = "1"
             if fp.get("gpu_mode") == "disabled":
                 env_vars["MOZ_WEBRENDER"] = "0"
             args.extend(
@@ -186,7 +189,7 @@ class BrowserLauncher:
                 ]
             )
             if proxy_type != "direct" and proxy_host and proxy_port:
-                args.append(f"--proxy-server={proxy_type}://{proxy_host}:{proxy_port}")
+                args.append(f"--proxy-server={proxy_type}://{format_proxy_host_port(proxy_host, proxy_port)}")
             args.append(compiled["extended_parameters_flag"])
             if headless:
                 args.append("-headless")
@@ -212,6 +215,10 @@ class BrowserLauncher:
                     "--force-color-profile=srgb",
                 ]
             )
+            if plat["host_os"] == "macos":
+                args.extend(["--use-mock-keychain", "--password-store=basic"])
+            elif plat["host_os"] == "linux":
+                args.extend(["--disable-dev-shm-usage", "--password-store=basic"])
             if has_saved_session and not startup_urls:
                 args.append("--restore-last-session")
             if ua:
@@ -244,7 +251,7 @@ class BrowserLauncher:
 
             # Proxy flag
             if proxy_type != "direct" and proxy_host and proxy_port:
-                args.append(f"--proxy-server={proxy_type}://{proxy_host}:{proxy_port}")
+                args.append(f"--proxy-server={proxy_type}://{format_proxy_host_port(proxy_host, proxy_port)}")
 
             # TLS Cipher Suite Blacklist
             if fp.get("tls_switch") and fp.get("tls_cipher_blacklist"):

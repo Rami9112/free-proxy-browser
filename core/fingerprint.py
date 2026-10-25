@@ -925,15 +925,45 @@ def resolve_country_locale(country_code: Optional[str], fallback_ip: str = "") -
     }
 
 
+def format_proxy_host_port(host: str, port: Any) -> str:
+    """
+    Formats host and port for URL / CLI proxy flags (`--proxy-server`, `curl -x`),
+    wrapping bare IPv6 literals in `[...]` while preserving IPv4/domain hosts.
+    """
+    h = (host or "").strip()
+    if h.startswith("[") and h.endswith("]"):
+        h = h[1:-1].strip()
+    if ":" in h:
+        return f"[{h}]:{port}"
+    return f"{h}:{port}"
+
+
+def _split_host_port_token(token: str) -> Tuple[str, int]:
+    """
+    Extracts `(host, port)` from `host:port` or `[ipv6]:port`.
+    Returns `(unbracketed_host, port)` or `("", 0)` if not a valid `host:port` pair.
+    """
+    t = (token or "").strip()
+    if not t:
+        return "", 0
+    m_v6 = re.match(r"^\[([^\]]+)\]:(\d+)$", t)
+    if m_v6:
+        return m_v6.group(1).strip(), int(m_v6.group(2))
+    parts = t.split(":")
+    if len(parts) == 2 and parts[1].isdigit():
+        return parts[0].strip(), int(parts[1])
+    return "", 0
+
+
 def parse_proxy_string(raw: str, default_type: str = "socks5") -> Dict[str, Any]:
     """
-    Parses common proxy string formats into structured fields:
-      - `socks5://user:pass@host:port` / `http://user:pass@host:port`
-      - `user:pass@host:port`
-      - `host:port:user:pass`
-      - `host:port@user:pass`
-      - `host:port`
-    Returns: `{"type", "host", "port", "username", "password"}`
+    Parses common IPv4, domain, and IPv6 proxy string formats into structured fields:
+      - `socks5://user:pass@host:port` / `socks5://user:pass@[2001:db8::1]:1080`
+      - `user:pass@host:port` / `user:pass@[2001:db8::1]:1080`
+      - `host:port:user:pass` / `[2001:db8::1]:1080:user:pass`
+      - `host:port@user:pass` / `[2001:db8::1]:1080@user:pass`
+      - `host:port` / `[2001:db8::1]:1080`
+    Returns: `{"type", "host", "port", "username", "password"}` with `host` unbracketed.
     """
     s = (raw or "").strip()
     ptype = (default_type or "socks5").strip().lower()
@@ -958,35 +988,46 @@ def parse_proxy_string(raw: str, default_type: str = "socks5") -> Dict[str, Any]
 
     if "@" in s:
         left, right = s.rsplit("@", 1)
-        # Check whether right side is host:port (standard user:pass@host:port) or user:pass (host:port@user:pass)
-        r_parts = right.split(":")
-        l_parts = left.split(":")
-        if len(r_parts) == 2 and r_parts[1].isdigit():
-            host = r_parts[0].strip()
-            port = int(r_parts[1])
+        r_host, r_port = _split_host_port_token(right)
+        l_host, l_port = _split_host_port_token(left)
+        if r_host and r_port > 0:
+            host = r_host
+            port = r_port
             if ":" in left:
                 username, password = left.split(":", 1)
             else:
                 username = left
-        elif len(l_parts) == 2 and l_parts[1].isdigit():
-            host = l_parts[0].strip()
-            port = int(l_parts[1])
+        elif l_host and l_port > 0:
+            host = l_host
+            port = l_port
             if ":" in right:
                 username, password = right.split(":", 1)
             else:
                 username = right
     else:
-        parts = s.split(":")
-        if len(parts) >= 4 and parts[1].isdigit():
-            host = parts[0].strip()
-            port = int(parts[1])
-            username = parts[2].strip()
-            password = ":".join(parts[3:]).strip()
-        elif len(parts) == 2 and parts[1].isdigit():
-            host = parts[0].strip()
-            port = int(parts[1])
+        # Check bracketed IPv6 first: [ipv6]:port or [ipv6]:port:user:pass
+        m_v6_full = re.match(r"^\[([^\]]+)\](?::(\d+)(?::([^:]*):(.*))?)?$", s)
+        if m_v6_full:
+            host = m_v6_full.group(1).strip()
+            if m_v6_full.group(2):
+                port = int(m_v6_full.group(2))
+            if m_v6_full.group(3) is not None:
+                username = m_v6_full.group(3).strip()
+                password = (m_v6_full.group(4) or "").strip()
         else:
-            host = s
+            parts = s.split(":")
+            if len(parts) >= 4 and parts[1].isdigit() and not all(
+                all(c in "0123456789abcdefABCDEF" for c in p) for p in parts if p
+            ):
+                host = parts[0].strip()
+                port = int(parts[1])
+                username = parts[2].strip()
+                password = ":".join(parts[3:]).strip()
+            elif len(parts) == 2 and parts[1].isdigit():
+                host = parts[0].strip()
+                port = int(parts[1])
+            else:
+                host = s.strip("[]")
 
     return {
         "type": ptype,
@@ -1026,7 +1067,7 @@ def _tunnel_http_get_pure_python(
     scheme = (ptype or "socks5").strip().lower()
     if scheme in ("http", "https"):
         auth_str = f"{urllib.parse.quote(puser)}:{urllib.parse.quote(ppass)}@" if puser else ""
-        proxy_url = f"{scheme}://{auth_str}{phost}:{pport}"
+        proxy_url = f"{scheme}://{auth_str}{format_proxy_host_port(phost, pport)}"
         handler = urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url})
         opener = urllib.request.build_opener(handler)
         url = f"http://{target_host}:{target_port}{target_path}"
@@ -1035,7 +1076,8 @@ def _tunnel_http_get_pure_python(
             return resp.read().decode("utf-8", errors="ignore")
 
     # SOCKS5 / SOCKS5h protocol (RFC 1928 & RFC 1929)
-    with socket.create_connection((phost, int(pport)), timeout=timeout) as sock:
+    clean_phost = phost.strip("[]")
+    with socket.create_connection((clean_phost, int(pport)), timeout=timeout) as sock:
         sock.settimeout(timeout)
         if puser:
             sock.sendall(b"\x05\x02\x00\x02")
@@ -1130,7 +1172,7 @@ def check_proxy_and_resolve_geo(
     if ptype in ("socks5", "http", "https") and phost and pport > 0 and not target_ip:
         curl_scheme = "socks5h" if ptype == "socks5" else ptype
         auth_part = f"{puser}:{ppass}@" if puser else ""
-        proxy_url = f"{curl_scheme}://{auth_part}{phost}:{pport}"
+        proxy_url = f"{curl_scheme}://{auth_part}{format_proxy_host_port(phost, pport)}"
         curl_bin = resolve_curl_executable()
         raw_json_str = ""
         try:
@@ -1576,9 +1618,11 @@ def build_firefox_prefs_js(
         add_pref("general.useragent.override", ua)
 
     os_plat = fp.get("os_platform", "Windows")
+    ch = fp.get("client_hints") or {}
     if os_plat == "Windows":
+        win_oscpu = "Windows NT 10.0; WOW64" if ("WOW64" in ua or ch.get("wow64") == "1") else "Windows NT 10.0; Win64; x64"
         add_pref("general.appversion.override", "5.0 (Windows)")
-        add_pref("general.oscpu.override", "Windows NT 10.0; Win64; x64")
+        add_pref("general.oscpu.override", win_oscpu)
         add_pref("general.platform.override", "Win32")
     elif os_plat == "macOS":
         add_pref("general.appversion.override", "5.0 (Macintosh)")
@@ -1597,9 +1641,12 @@ def build_firefox_prefs_js(
         add_pref("general.appversion.override", ua.replace("Mozilla/", ""))
     elif os_plat == "Linux":
         app_ver = "5.0 (X11; Ubuntu)" if "Ubuntu" in ua else "5.0 (X11)"
+        linux_plat = ch.get("platform_navigator") or (
+            "Linux aarch64" if "aarch64" in ua else ("Linux i686" if "i686" in ua else "Linux x86_64")
+        )
         add_pref("general.appversion.override", app_ver)
-        add_pref("general.oscpu.override", "Linux x86_64")
-        add_pref("general.platform.override", "Linux x86_64")
+        add_pref("general.oscpu.override", linux_plat)
+        add_pref("general.platform.override", linux_plat)
 
     if fp.get("gpu_mode") == "disabled":
         add_pref("webgl.disabled", True)

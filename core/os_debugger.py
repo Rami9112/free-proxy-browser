@@ -34,6 +34,7 @@ from .fingerprint import (
     compute_client_rect_fp,
     generate_fingerprint_profile,
     generate_local_webrtc_ip,
+    parse_proxy_string,
 )
 from .kernel_rebrander import ensure_rebranded_kernels
 from .kernels import discover_kernels
@@ -507,7 +508,7 @@ class CrossPlatformDebugger:
                         f"arch={ch_meta['architecture']}, bitness={ch_meta['bitness']}",
                     )
 
-            # Verify Gecko prefs.js native SOCKS5 proxy injection
+            # Verify Gecko prefs.js native SOCKS5 proxy injection & Linux ARM64 platform override
             yang_prx_plan = self.launcher.build_launch_plan(
                 {
                     "id": "dbg_yang_prx",
@@ -515,18 +516,68 @@ class CrossPlatformDebugger:
                     "name": "Yang SOCKS5 Prefs Test",
                     "kernel_type": "yangbrowser",
                     "os_platform": "Linux",
-                    "proxy": {"type": "socks5", "host": "127.0.0.1", "port": 1080},
-                    "fingerprint": {"os_platform": "Linux"},
+                    "proxy": {"type": "socks5", "host": "[2001:db8::1]:1080:u6:p6", "port": 0},
+                    "fingerprint": {
+                        "os_platform": "Linux",
+                        "user_agent": "Mozilla/5.0 (X11; Ubuntu; Linux aarch64; rv:153.0) Gecko/20100101 Firefox/153.0",
+                        "client_hints": {"platform_navigator": "Linux aarch64"},
+                    },
                 },
                 write_files=False,
             )
             f_prefs = yang_prx_plan["compiled"]["firefoxPrefsJs"]
             ok_gecko_prx = (
                 'user_pref("network.proxy.type", 1);' in f_prefs
-                and 'user_pref("network.proxy.socks", "127.0.0.1");' in f_prefs
+                and 'user_pref("network.proxy.socks", "2001:db8::1");' in f_prefs
                 and 'user_pref("network.proxy.socks_remote_dns", true);' in f_prefs
+                and 'user_pref("general.platform.override", "Linux aarch64");' in f_prefs
+                and "--proxy-server=socks5://[2001:db8::1]:1080" in yang_prx_plan["args"]
+                and yang_prx_plan["env"].get("MOZ_NO_REMOTE") == "1"
             )
-            record_check("gecko_prefs_proxy[socks5]", ok_gecko_prx, "network.proxy.socks_remote_dns=true")
+            record_check("gecko_prefs_proxy[socks5+ipv6+aarch64]", ok_gecko_prx, "network.proxy.socks + Linux aarch64 + MOZ_NO_REMOTE")
+
+            # Verify IPv6 proxy parsing across URL & colon-separated formats + macOS/Linux host flags
+            v6_url = parse_proxy_string("socks5://user6:pass6@[2001:db8::99]:1080")
+            v6_col = parse_proxy_string("[::1]:9050:tor_u:tor_p")
+            mac_plan = self.launcher.build_launch_plan(
+                {
+                    "id": "dbg_mac_flags",
+                    "serial_number": 961,
+                    "name": "macOS Host Keychain Flags",
+                    "kernel_type": "taebrowser",
+                    "os_platform": "macOS",
+                    "proxy": {"type": "direct"},
+                    "fingerprint": {"os_platform": "macOS"},
+                },
+                write_files=False,
+                host_os="macos",
+                host_arch="arm64",
+            )
+            lin_plan = self.launcher.build_launch_plan(
+                {
+                    "id": "dbg_lin_flags",
+                    "serial_number": 962,
+                    "name": "Linux Host SHM Flags",
+                    "kernel_type": "taebrowser",
+                    "os_platform": "Linux",
+                    "proxy": {"type": "direct"},
+                    "fingerprint": {"os_platform": "Linux"},
+                },
+                write_files=False,
+                host_os="linux",
+                host_arch="x64",
+            )
+            ok_v6_and_os_flags = (
+                v6_url["host"] == "2001:db8::99"
+                and v6_url["port"] == 1080
+                and v6_url["username"] == "user6"
+                and v6_col["host"] == "::1"
+                and v6_col["port"] == 9050
+                and v6_col["username"] == "tor_u"
+                and "--use-mock-keychain" in mac_plan["args"]
+                and "--disable-dev-shm-usage" in lin_plan["args"]
+            )
+            record_check("ipv6_proxy_and_posix_host_flags", ok_v6_and_os_flags, "IPv6 brackets + --use-mock-keychain + --disable-dev-shm-usage")
 
             # Verify pure-Python SOCKS5 RFC 1928 + RFC 1929 tunnel over loopback socket
             ok_socks5_tunnel = self._verify_local_socks5_rfc1929_tunnel()
