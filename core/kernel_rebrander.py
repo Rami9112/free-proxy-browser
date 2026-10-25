@@ -333,22 +333,27 @@ def _ensure_unpacked_zparts(kernels_root: Path) -> None:
     Automatically reassembles and decompresses any split `.zpart00` archives inside `kernels/`
     on first run after cloning from GitHub (where files >100MB like `chrome.dll` and `xul.dll`
     are stored as <50MB `.zpart*` chunks).
+    Uses atomic temporary file replacement and compressed-size validation to self-heal
+    interrupted or truncated unpacks across all OSes.
     """
     if not kernels_root.is_dir():
         return
     for part0 in kernels_root.rglob("*.zpart00"):
         target_name = part0.name[: -len(".zpart00")]
         target_path = part0.parent / target_name
-        if target_path.is_file() and target_path.stat().st_size > 0:
-            continue
         parts = sorted(part0.parent.glob(f"{target_name}.zpart*"))
         if not parts:
+            continue
+        total_compressed = sum(p.stat().st_size for p in parts if p.is_file())
+        if target_path.is_file() and target_path.stat().st_size >= total_compressed > 0:
             continue
         compressed = bytearray()
         for p in parts:
             compressed.extend(p.read_bytes())
         raw = zlib.decompress(bytes(compressed))
-        target_path.write_bytes(raw)
+        tmp_path = part0.parent / f".{target_name}.unpack_tmp_{os.getpid()}"
+        tmp_path.write_bytes(raw)
+        os.replace(str(tmp_path), str(target_path))
 
 
 def ensure_rebranded_kernels(base_dir: Path, cwd_global: Path) -> Tuple[Optional[Dict[str, str]], Optional[Dict[str, str]]]:

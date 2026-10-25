@@ -91,10 +91,17 @@ def ensure_freeanti_extension(base_data_dir: Path) -> Path:
         "content_scripts": [
             {
                 "matches": ["<all_urls>"],
+                "js": ["content_stealth_shield.js"],
+                "run_at": "document_start",
+                "all_frames": True,
+                "world": "MAIN",
+            },
+            {
+                "matches": ["<all_urls>"],
                 "js": ["content_human_paste.js"],
                 "run_at": "document_start",
                 "all_frames": True,
-            }
+            },
         ],
     }
 
@@ -229,8 +236,38 @@ installValidationRules();
 })();
 """
 
+    content_stealth_shield_js = r"""// freeanti Cross-OS MAIN-World Stealth Shield (Windows / macOS / Linux)
+(function() {
+  try {
+    // 1. Ensure navigator.webdriver is false with native Function.prototype.toString signature
+    const navProto = Object.getPrototypeOf(navigator);
+    if (navProto) {
+      const wdGetter = function webdriver() { return false; };
+      Object.defineProperty(wdGetter, "name", { value: "get webdriver", configurable: true });
+      Object.defineProperty(navProto, "webdriver", {
+        get: wdGetter,
+        configurable: true,
+        enumerable: true
+      });
+    }
+    // 2. Purge any ChromeDriver / CDP $cdc_ or cdc_ leak markers across OS builds
+    const purgeCdc = (target) => {
+      if (!target) return;
+      for (const prop of Object.getOwnPropertyNames(target)) {
+        if (/^(\$?cdc_|__webdriver|__selenium|__fxdriver|__driver)/.test(prop)) {
+          try { delete target[prop]; } catch {}
+        }
+      }
+    };
+    purgeCdc(window);
+    purgeCdc(document);
+  } catch {}
+})();
+"""
+
     (ext_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     (ext_dir / "background.mjs").write_text(background_mjs, encoding="utf-8")
+    (ext_dir / "content_stealth_shield.js").write_text(content_stealth_shield_js, encoding="utf-8")
     (ext_dir / "content_human_paste.js").write_text(content_human_paste_js, encoding="utf-8")
 
     return ext_dir

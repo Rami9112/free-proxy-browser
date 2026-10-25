@@ -149,9 +149,13 @@ class CrossPlatformDebugger:
 
         # 2. Ensure stealth extension exists
         ext_dir = self.data_dir / "extensions" / "freeanti_assistant"
-        if not (ext_dir / "manifest.json").is_file() or not (ext_dir / "background.mjs").is_file():
+        if (
+            not (ext_dir / "manifest.json").is_file()
+            or not (ext_dir / "background.mjs").is_file()
+            or not (ext_dir / "content_stealth_shield.js").is_file()
+        ):
             ensure_freeanti_extension(self.data_dir)
-            repairs.append("Rebuilt missing stealth extension (freeanti_assistant)")
+            repairs.append("Rebuilt stealth extension (freeanti_assistant)")
 
         # 3. On POSIX (macOS / Linux), ensure kernel binaries & drivers have +x permission
         if os.name != "nt" and kernels_dir.is_dir():
