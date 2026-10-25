@@ -15,6 +15,7 @@ import json
 import os
 import socket
 import stat
+import struct
 import tempfile
 import threading
 import time
@@ -530,6 +531,31 @@ class CrossPlatformDebugger:
             # Verify pure-Python SOCKS5 RFC 1928 + RFC 1929 tunnel over loopback socket
             ok_socks5_tunnel = self._verify_local_socks5_rfc1929_tunnel()
             record_check("pure_python_socks5_rfc1929", ok_socks5_tunnel, "SOCKS5 auth + ATYP=0x03 HTTP tunnel")
+
+            # Phase 4c: Verify Native WebView2Loader DLLs (x64=0x8664, arm64=0xaa64, x86=0x14c) & AnyCPU Launcher
+            expected_dll_machines = {
+                "win-x64": 0x8664,
+                "win-arm64": 0xAA64,
+                "win-x86": 0x014C,
+            }
+            for r_arch, exp_machine in expected_dll_machines.items():
+                dll_p = self.base_dir / "runtimes" / r_arch / "native" / "WebView2Loader.dll"
+                ok_dll = False
+                if dll_p.is_file():
+                    raw_hdr = dll_p.read_bytes()[:1024]
+                    pe_off = struct.unpack_from("<I", raw_hdr, 0x3C)[0]
+                    mach = struct.unpack_from("<H", raw_hdr, pe_off + 4)[0]
+                    ok_dll = mach == exp_machine
+                record_check(f"webview2_native_dll[{r_arch}]", ok_dll, f"expected_machine={hex(exp_machine)}")
+
+            exe_p = self.base_dir / "FreeProxyBrowser.exe"
+            sh_p = self.base_dir / "start_free_proxy_browser.sh"
+            bat_p = self.base_dir / "start_free_proxy_browser.bat"
+            record_check(
+                "cross_os_entrypoint_launchers",
+                exe_p.is_file() and sh_p.is_file() and bat_p.is_file(),
+                "FreeProxyBrowser.exe + .sh + .bat",
+            )
 
         # Phase 5: Optional Live Browser Headless Spawn Check on Real Host
         live_spawn_results: Dict[str, Any] = {}

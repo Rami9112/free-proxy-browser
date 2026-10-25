@@ -152,13 +152,20 @@ namespace FreeAnti
             }
             catch (Exception ex)
             {
-                Log("WebView2 exception: " + ex.ToString());
-                MessageBox.Show(
-                    "WebView2 initialization error: " + ex.Message,
-                    "Free Proxy Browser WebView2 Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                Log("WebView2 exception: " + ex.ToString() + " — falling back to system browser.");
+                try
+                {
+                    Process.Start(new ProcessStartInfo(_targetUrl) { UseShellExecute = true });
+                }
+                catch
+                {
+                    MessageBox.Show(
+                        "WebView2 initialization error: " + ex.Message,
+                        "Free Proxy Browser WebView2 Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
             }
         }
 
@@ -170,7 +177,25 @@ namespace FreeAnti
                 {
                     if (!_backendProc.HasExited)
                     {
-                        _backendProc.Kill();
+                        try
+                        {
+                            var tk = new ProcessStartInfo
+                            {
+                                FileName = "taskkill",
+                                Arguments = "/F /T /PID " + _backendProc.Id,
+                                UseShellExecute = false,
+                                CreateNoWindow = true
+                            };
+                            using (var p = Process.Start(tk))
+                            {
+                                if (p != null) p.WaitForExit(3000);
+                            }
+                        }
+                        catch { }
+                        if (!_backendProc.HasExited)
+                        {
+                            _backendProc.Kill();
+                        }
                     }
                 }
                 catch
@@ -196,8 +221,9 @@ namespace FreeAnti
 
         /// <summary>
         /// Pre-loads the native WebView2Loader.dll matching the current CLR process architecture
-        /// (win-x64, win-arm64, or win-x86) so the AnyCPU executable runs natively on both
-        /// Windows x64 and Windows ARM64 without BadImageFormatException.
+        /// (win-x64, win-arm64, or win-x86) and registers the loader directory via
+        /// CoreWebView2Environment.SetLoaderDllFolderPath so the AnyCPU executable runs natively
+        /// across Windows x64, Windows ARM64, and Windows x86 without BadImageFormatException.
         /// </summary>
         private static void PreloadNativeWebView2Loader(string baseDir)
         {
@@ -231,6 +257,7 @@ namespace FreeAnti
                         if (handle != IntPtr.Zero)
                         {
                             SetDllDirectoryW(nativeDir);
+                            try { CoreWebView2Environment.SetLoaderDllFolderPath(nativeDir); } catch { }
                             return;
                         }
                     }
@@ -347,11 +374,43 @@ namespace FreeAnti
                 Path.Combine(userProfile, "miniconda3", "python.exe"),
                 Path.Combine(userProfile, "anaconda3", "python.exe"),
                 Path.Combine(localAppData, "miniconda3", "python.exe"),
-                Path.Combine(localAppData, "anaconda3", "python.exe")
+                Path.Combine(localAppData, "anaconda3", "python.exe"),
+                Path.Combine(userProfile, "scoop", "apps", "python", "current", "python.exe"),
+                "/opt/homebrew/bin/python3",
+                "/usr/local/bin/python3",
+                "/usr/bin/python3"
             };
             foreach (string c in condaCandidates)
             {
                 if (IsValidPythonExe(c)) return c;
+            }
+
+            // Check uv and pyenv-win managed Python installations
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var managedRoots = new List<string>
+            {
+                Path.Combine(appData, "uv", "python"),
+                Path.Combine(localAppData, "uv", "python"),
+                Path.Combine(userProfile, ".local", "share", "uv", "python"),
+                Path.Combine(userProfile, ".pyenv", "pyenv-win", "versions")
+            };
+            foreach (string mRoot in managedRoots)
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(mRoot) && Directory.Exists(mRoot))
+                    {
+                        string[] subDirs = Directory.GetDirectories(mRoot);
+                        Array.Sort(subDirs);
+                        Array.Reverse(subDirs);
+                        foreach (string sd in subDirs)
+                        {
+                            string cand = Path.Combine(sd, "python.exe");
+                            if (IsValidPythonExe(cand)) return cand;
+                        }
+                    }
+                }
+                catch { }
             }
 
             string pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
