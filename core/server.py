@@ -378,7 +378,7 @@ class FreeAntiRequestHandler(BaseHTTPRequestHandler):
             res = check_proxy_and_resolve_geo(
                 proxy=body.get("proxy"),
                 target_ip=body.get("exit_ip"),
-                country_hint=body.get("country") or "KR",
+                country_hint=body.get("country") or "US",
             )
             self._send_json({"ok": True, "resolved": res})
             return

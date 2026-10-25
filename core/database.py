@@ -48,8 +48,8 @@ class FreeAntiDatabase:
                     username TEXT DEFAULT '',
                     password TEXT DEFAULT '',
                     exit_ip TEXT DEFAULT '',
-                    country TEXT DEFAULT 'KR',
-                    timezone TEXT DEFAULT 'Asia/Seoul',
+                    country TEXT DEFAULT 'US',
+                    timezone TEXT DEFAULT 'America/New_York',
                     created_at INTEGER NOT NULL
                 );
 
@@ -155,7 +155,7 @@ class FreeAntiDatabase:
                         if k not in fp:
                             fp[k] = v
                     if "country" not in prx:
-                        prx["country"] = fp.get("proxy_country", "KR")
+                        prx["country"] = fp.get("proxy_country", "US")
                     conn.execute(
                         "UPDATE profiles SET fingerprint_json = ?, proxy_json = ? WHERE id = ?",
                         (json.dumps(fp, ensure_ascii=False), json.dumps(prx, ensure_ascii=False), r["id"]),
@@ -169,9 +169,9 @@ class FreeAntiDatabase:
                 conn.executemany(
                     "INSERT INTO groups (id, name, remark, created_at) VALUES (?, ?, ?, ?)",
                     [
-                        ("default", "기본 그룹 (Default)", "기본 프로파일 그룹", now),
-                        ("ecommerce", "이커머스 & 광고 (E-Commerce)", "글로벌 스토어 / 셀러 / 광고 계정", now),
-                        ("web3", "멀티 계정 & 자동화 (Multi-Account)", "SNS / 크립토 / RPA 자동화 전용", now),
+                        ("default", "Default Group", "Default browser profile group", now),
+                        ("ecommerce", "E-Commerce & Ads", "Global store, seller, and ad accounts", now),
+                        ("web3", "Multi-Account & Automation", "Social media, Web3, and RPA automation profiles", now),
                     ],
                 )
 
@@ -185,7 +185,7 @@ class FreeAntiDatabase:
                         "group_id": "default",
                         "kernel_type": "taebrowser",
                         "os_platform": "Windows",
-                        "notes": "TaeBrowser 153 (Chromium 153.0.8010.27) + x-browser-validation 헤더 위조 + Canvas/WebGL/Audio/ClientRects 변조",
+                        "notes": "TaeBrowser 153 (Chromium 153.0.8010.27) + x-browser-validation header forgery + Canvas/WebGL/Audio/ClientRects noise",
                         "tags": ["TaeBrowser 153", "Windows", "Stealth"],
                     },
                     {
@@ -195,7 +195,7 @@ class FreeAntiDatabase:
                         "group_id": "ecommerce",
                         "kernel_type": "yangbrowser",
                         "os_platform": "macOS",
-                        "notes": "YangBrowser 153 (Firefox/Gecko 153.0.4) + xul.dll custom.* 37개 후킹 + macOS Fakefonts/Navigator 에뮬레이션",
+                        "notes": "YangBrowser 153 (Firefox/Gecko 153.0.4) + 37 xul.dll custom.* hooks + macOS Fakefonts/Navigator emulation",
                         "tags": ["YangBrowser 153", "macOS", "Gecko"],
                     },
                     {
@@ -205,7 +205,7 @@ class FreeAntiDatabase:
                         "group_id": "web3",
                         "kernel_type": "taebrowser",
                         "os_platform": "iPhone",
-                        "notes": "모바일 뷰포트 & 터치(MaxTouchPoints=5) + Apple GPU MAX_VIEWPORT_DIMS [16384,16384] 에뮬레이션",
+                        "notes": "Mobile viewport & touch (MaxTouchPoints=5) + Apple GPU MAX_VIEWPORT_DIMS [16384,16384] emulation",
                         "tags": ["Mobile", "iPhone", "TaeBrowser 153"],
                     },
                 ]
@@ -338,9 +338,9 @@ class FreeAntiDatabase:
                 "port": int(proxy_in.get("port") or 0),
                 "username": proxy_in.get("username") or "",
                 "password": proxy_in.get("password") or "",
-                "exit_ip": proxy_in.get("exit_ip") or fp.get("webrtc_public_ip", "211.234.120.45"),
-                "country": proxy_in.get("country") or fp.get("proxy_country", "KR"),
-                "timezone": proxy_in.get("timezone") or fp.get("timezone", "Asia/Seoul"),
+                "exit_ip": proxy_in.get("exit_ip") or fp.get("webrtc_public_ip", "198.51.100.77"),
+                "country": proxy_in.get("country") or fp.get("proxy_country", "US"),
+                "timezone": proxy_in.get("timezone") or fp.get("timezone", "America/New_York"),
             }
             if proxy_in.get("latitude") is not None:
                 proxy["latitude"] = float(proxy_in["latitude"])
@@ -550,8 +550,8 @@ class FreeAntiDatabase:
                     password = parsed_prx["password"]
         name = str(data.get("name") or f"{ptype.upper()} {host}:{port}" if host else f"Proxy {pid[-4:]}")
         exit_ip = str(data.get("exit_ip") or "")
-        country = str(data.get("country") or "KR")
-        timezone = str(data.get("timezone") or "Asia/Seoul")
+        country = str(data.get("country") or "US")
+        timezone = str(data.get("timezone") or "America/New_York")
         now = int(time.time())
         with self._connect() as conn:
             conn.execute(

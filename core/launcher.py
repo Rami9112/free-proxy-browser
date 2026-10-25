@@ -124,8 +124,8 @@ class BrowserLauncher:
         )
 
         resolved_loc = compiled.get("resolved_locale") or {}
-        ui_lang = resolved_loc.get("ui_language") or fp.get("ui_language") or (fp.get("languages") or ["ko-KR"])[0]
-        tz = str(resolved_loc.get("timezone") or fp.get("timezone") or "Asia/Seoul").replace(" ", "_")
+        ui_lang = resolved_loc.get("ui_language") or fp.get("ui_language") or (fp.get("languages") or ["en-US"])[0]
+        tz = str(resolved_loc.get("timezone") or fp.get("timezone") or "America/New_York").replace(" ", "_")
         ua = fp.get("user_agent") or ""
         os_platform = fp.get("os_platform", "Windows")
         screen_res = str(fp.get("screen_resolution", "1920_1080")).replace("_", ",")
@@ -666,7 +666,7 @@ class BrowserLauncher:
         dynamic_file = profile_dir / md5_hex(f"{pid}_webrtc")
 
         dynamic_payload: Dict[str, Any] = {
-            "TimeZone": str(fp.get("timezone") or "Asia/Seoul").replace(" ", "_"),
+            "TimeZone": str(fp.get("timezone") or "America/New_York").replace(" ", "_"),
         }
         if fp.get("webrtc_mode") == "disabled":
             dynamic_payload["DisableWebRTC"] = True

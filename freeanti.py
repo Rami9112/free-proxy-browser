@@ -311,6 +311,9 @@ def cmd_test(args: argparse.Namespace) -> int:
 
     assert Path(tae_plan["executable"]).name == "TaeBrowser.exe"
     assert Path(yang_plan["executable"]).name == "YangBrowser.exe"
+    assert "--lang=en-US" in tae_plan["args"], "Default UI language must be en-US"
+    assert tae_plan["env"]["TZ"] == "America/New_York", "Default timezone must be America/New_York"
+    assert tae_plan["compiled"]["staticConfig"]["Langs"] == "en-US,en", "Default browser languages must be en-US,en"
 
     tae_sc = tae_plan["compiled"]["sidecar_files"]
     assert Path(tae_sc["static_config"]["path"]).is_file()

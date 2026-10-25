@@ -154,7 +154,7 @@ namespace FreeAnti
             {
                 Log("WebView2 exception: " + ex.ToString());
                 MessageBox.Show(
-                    "WebView2 초기화 오류: " + ex.Message,
+                    "WebView2 initialization error: " + ex.Message,
                     "Free Proxy Browser WebView2 Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

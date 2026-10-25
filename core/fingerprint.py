@@ -27,16 +27,8 @@ from .extension_builder import compute_chrome_validation_headers
 # `follow_proxy_geolocation` is enabled on a profile.
 # ---------------------------------------------------------------------------
 COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
-    "KR": {
-        "country_name": "대한민국 (South Korea)",
-        "timezone": "Asia/Seoul",
-        "languages": ["ko-KR", "ko", "en-US", "en"],
-        "ui_language": "ko-KR",
-        "latitude": 37.5665,
-        "longitude": 126.9780,
-    },
     "US": {
-        "country_name": "미국 (United States)",
+        "country_name": "United States (East / NY)",
         "timezone": "America/New_York",
         "languages": ["en-US", "en"],
         "ui_language": "en-US",
@@ -44,15 +36,23 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -74.0060,
     },
     "US_WEST": {
-        "country_name": "미국 서부 (US West / LA)",
+        "country_name": "United States (West / LA)",
         "timezone": "America/Los_Angeles",
         "languages": ["en-US", "en"],
         "ui_language": "en-US",
         "latitude": 34.0522,
         "longitude": -118.2437,
     },
+    "KR": {
+        "country_name": "South Korea",
+        "timezone": "Asia/Seoul",
+        "languages": ["ko-KR", "ko", "en-US", "en"],
+        "ui_language": "ko-KR",
+        "latitude": 37.5665,
+        "longitude": 126.9780,
+    },
     "JP": {
-        "country_name": "일본 (Japan)",
+        "country_name": "Japan",
         "timezone": "Asia/Tokyo",
         "languages": ["ja-JP", "ja", "en-US", "en"],
         "ui_language": "ja-JP",
@@ -60,7 +60,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 139.6503,
     },
     "CN": {
-        "country_name": "중국 (China)",
+        "country_name": "China",
         "timezone": "Asia/Shanghai",
         "languages": ["zh-CN", "zh", "en-US", "en"],
         "ui_language": "zh-CN",
@@ -68,7 +68,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 121.4737,
     },
     "TW": {
-        "country_name": "대만 (Taiwan)",
+        "country_name": "Taiwan",
         "timezone": "Asia/Taipei",
         "languages": ["zh-TW", "zh", "en-US", "en"],
         "ui_language": "zh-TW",
@@ -76,7 +76,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 121.5654,
     },
     "HK": {
-        "country_name": "홍콩 (Hong Kong)",
+        "country_name": "Hong Kong",
         "timezone": "Asia/Hong_Kong",
         "languages": ["zh-HK", "zh-TW", "en-US", "en"],
         "ui_language": "zh-HK",
@@ -84,7 +84,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 114.1694,
     },
     "SG": {
-        "country_name": "싱가포르 (Singapore)",
+        "country_name": "Singapore",
         "timezone": "Asia/Singapore",
         "languages": ["en-SG", "en-US", "zh-SG", "en"],
         "ui_language": "en-US",
@@ -92,7 +92,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 103.8198,
     },
     "VN": {
-        "country_name": "베트남 (Vietnam)",
+        "country_name": "Vietnam",
         "timezone": "Asia/Ho_Chi_Minh",
         "languages": ["vi-VN", "vi", "en-US", "en"],
         "ui_language": "vi-VN",
@@ -100,7 +100,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 106.6297,
     },
     "TH": {
-        "country_name": "태국 (Thailand)",
+        "country_name": "Thailand",
         "timezone": "Asia/Bangkok",
         "languages": ["th-TH", "th", "en-US", "en"],
         "ui_language": "th-TH",
@@ -108,7 +108,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 100.5018,
     },
     "PH": {
-        "country_name": "필리핀 (Philippines)",
+        "country_name": "Philippines",
         "timezone": "Asia/Manila",
         "languages": ["en-PH", "fil-PH", "en-US", "en"],
         "ui_language": "en-US",
@@ -116,7 +116,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 120.9842,
     },
     "ID": {
-        "country_name": "인도네시아 (Indonesia)",
+        "country_name": "Indonesia",
         "timezone": "Asia/Jakarta",
         "languages": ["id-ID", "id", "en-US", "en"],
         "ui_language": "id-ID",
@@ -124,7 +124,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 106.8456,
     },
     "MY": {
-        "country_name": "말레이시아 (Malaysia)",
+        "country_name": "Malaysia",
         "timezone": "Asia/Kuala_Lumpur",
         "languages": ["ms-MY", "en-MY", "en-US", "en"],
         "ui_language": "en-US",
@@ -132,7 +132,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 101.6869,
     },
     "IN": {
-        "country_name": "인도 (India)",
+        "country_name": "India",
         "timezone": "Asia/Kolkata",
         "languages": ["en-IN", "hi-IN", "en-US", "en"],
         "ui_language": "en-US",
@@ -140,7 +140,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 72.8777,
     },
     "DE": {
-        "country_name": "독일 (Germany)",
+        "country_name": "Germany",
         "timezone": "Europe/Berlin",
         "languages": ["de-DE", "de", "en-US", "en"],
         "ui_language": "de-DE",
@@ -148,7 +148,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 13.4050,
     },
     "GB": {
-        "country_name": "영국 (United Kingdom)",
+        "country_name": "United Kingdom",
         "timezone": "Europe/London",
         "languages": ["en-GB", "en-US", "en"],
         "ui_language": "en-GB",
@@ -156,7 +156,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -0.1278,
     },
     "FR": {
-        "country_name": "프랑스 (France)",
+        "country_name": "France",
         "timezone": "Europe/Paris",
         "languages": ["fr-FR", "fr", "en-US", "en"],
         "ui_language": "fr-FR",
@@ -164,7 +164,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 2.3522,
     },
     "NL": {
-        "country_name": "네덜란드 (Netherlands)",
+        "country_name": "Netherlands",
         "timezone": "Europe/Amsterdam",
         "languages": ["nl-NL", "nl", "en-US", "en"],
         "ui_language": "nl-NL",
@@ -172,7 +172,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 4.9041,
     },
     "ES": {
-        "country_name": "스페인 (Spain)",
+        "country_name": "Spain",
         "timezone": "Europe/Madrid",
         "languages": ["es-ES", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -180,7 +180,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -3.7038,
     },
     "IT": {
-        "country_name": "이탈리아 (Italy)",
+        "country_name": "Italy",
         "timezone": "Europe/Rome",
         "languages": ["it-IT", "it", "en-US", "en"],
         "ui_language": "it-IT",
@@ -188,7 +188,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 12.4964,
     },
     "RU": {
-        "country_name": "러시아 (Russia)",
+        "country_name": "Russia",
         "timezone": "Europe/Moscow",
         "languages": ["ru-RU", "ru", "en-US", "en"],
         "ui_language": "ru-RU",
@@ -196,7 +196,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 37.6173,
     },
     "CA": {
-        "country_name": "캐나다 (Canada)",
+        "country_name": "Canada",
         "timezone": "America/Toronto",
         "languages": ["en-CA", "en-US", "fr-CA", "en"],
         "ui_language": "en-US",
@@ -204,7 +204,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -79.3832,
     },
     "BR": {
-        "country_name": "브라질 (Brazil)",
+        "country_name": "Brazil",
         "timezone": "America/Sao_Paulo",
         "languages": ["pt-BR", "pt", "en-US", "en"],
         "ui_language": "pt-BR",
@@ -212,7 +212,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -46.6333,
     },
     "AU": {
-        "country_name": "호주 (Australia)",
+        "country_name": "Australia",
         "timezone": "Australia/Sydney",
         "languages": ["en-AU", "en-US", "en"],
         "ui_language": "en-US",
@@ -220,7 +220,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 151.2093,
     },
     "ZA": {
-        "country_name": "남아프리카공화국 (South Africa)",
+        "country_name": "South Africa",
         "timezone": "Africa/Johannesburg",
         "languages": ["en-ZA", "en-US", "en"],
         "ui_language": "en-US",
@@ -228,7 +228,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 28.0473,
     },
     "CO": {
-        "country_name": "콜롬비아 (Colombia)",
+        "country_name": "Colombia",
         "timezone": "America/Bogota",
         "languages": ["es-CO", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -236,7 +236,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -74.0721,
     },
     "MX": {
-        "country_name": "멕시코 (Mexico)",
+        "country_name": "Mexico",
         "timezone": "America/Mexico_City",
         "languages": ["es-MX", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -244,7 +244,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -99.1332,
     },
     "AR": {
-        "country_name": "아르헨티나 (Argentina)",
+        "country_name": "Argentina",
         "timezone": "America/Argentina/Buenos_Aires",
         "languages": ["es-AR", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -252,7 +252,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -58.3816,
     },
     "CL": {
-        "country_name": "칠레 (Chile)",
+        "country_name": "Chile",
         "timezone": "America/Santiago",
         "languages": ["es-CL", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -260,7 +260,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -70.6693,
     },
     "PE": {
-        "country_name": "페루 (Peru)",
+        "country_name": "Peru",
         "timezone": "America/Lima",
         "languages": ["es-PE", "es", "en-US", "en"],
         "ui_language": "es-ES",
@@ -268,7 +268,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -77.0428,
     },
     "PL": {
-        "country_name": "폴란드 (Poland)",
+        "country_name": "Poland",
         "timezone": "Europe/Warsaw",
         "languages": ["pl-PL", "pl", "en-US", "en"],
         "ui_language": "pl-PL",
@@ -276,7 +276,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 21.0122,
     },
     "TR": {
-        "country_name": "튀르키예 (Turkey)",
+        "country_name": "Turkey",
         "timezone": "Europe/Istanbul",
         "languages": ["tr-TR", "tr", "en-US", "en"],
         "ui_language": "tr-TR",
@@ -284,7 +284,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 28.9784,
     },
     "AE": {
-        "country_name": "아랍에미리트 (UAE)",
+        "country_name": "United Arab Emirates (UAE)",
         "timezone": "Asia/Dubai",
         "languages": ["ar-AE", "en-US", "en"],
         "ui_language": "en-US",
@@ -292,7 +292,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 55.2708,
     },
     "SA": {
-        "country_name": "사우디아라비아 (Saudi Arabia)",
+        "country_name": "Saudi Arabia",
         "timezone": "Asia/Riyadh",
         "languages": ["ar-SA", "en-US", "en"],
         "ui_language": "en-US",
@@ -300,7 +300,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 46.6753,
     },
     "SE": {
-        "country_name": "스웨덴 (Sweden)",
+        "country_name": "Sweden",
         "timezone": "Europe/Stockholm",
         "languages": ["sv-SE", "sv", "en-US", "en"],
         "ui_language": "sv-SE",
@@ -308,7 +308,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 18.0686,
     },
     "CH": {
-        "country_name": "스위스 (Switzerland)",
+        "country_name": "Switzerland",
         "timezone": "Europe/Zurich",
         "languages": ["de-CH", "fr-CH", "de", "en-US", "en"],
         "ui_language": "de-DE",
@@ -316,7 +316,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 8.5417,
     },
     "AT": {
-        "country_name": "오스트리아 (Austria)",
+        "country_name": "Austria",
         "timezone": "Europe/Vienna",
         "languages": ["de-AT", "de", "en-US", "en"],
         "ui_language": "de-DE",
@@ -324,7 +324,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 16.3738,
     },
     "BE": {
-        "country_name": "벨기에 (Belgium)",
+        "country_name": "Belgium",
         "timezone": "Europe/Brussels",
         "languages": ["nl-BE", "fr-BE", "en-US", "en"],
         "ui_language": "nl-NL",
@@ -332,7 +332,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 4.3517,
     },
     "PT": {
-        "country_name": "포르투갈 (Portugal)",
+        "country_name": "Portugal",
         "timezone": "Europe/Lisbon",
         "languages": ["pt-PT", "pt", "en-US", "en"],
         "ui_language": "pt-PT",
@@ -340,7 +340,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": -9.1393,
     },
     "CZ": {
-        "country_name": "체코 (Czechia)",
+        "country_name": "Czechia",
         "timezone": "Europe/Prague",
         "languages": ["cs-CZ", "cs", "en-US", "en"],
         "ui_language": "cs-CZ",
@@ -348,7 +348,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 14.4378,
     },
     "RO": {
-        "country_name": "루마니아 (Romania)",
+        "country_name": "Romania",
         "timezone": "Europe/Bucharest",
         "languages": ["ro-RO", "ro", "en-US", "en"],
         "ui_language": "ro-RO",
@@ -356,7 +356,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 26.1025,
     },
     "UA": {
-        "country_name": "우크라이나 (Ukraine)",
+        "country_name": "Ukraine",
         "timezone": "Europe/Kyiv",
         "languages": ["uk-UA", "uk", "en-US", "en"],
         "ui_language": "uk-UA",
@@ -364,7 +364,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 30.5234,
     },
     "KZ": {
-        "country_name": "카자흐스탄 (Kazakhstan)",
+        "country_name": "Kazakhstan",
         "timezone": "Asia/Almaty",
         "languages": ["kk-KZ", "ru-RU", "en-US", "en"],
         "ui_language": "ru-RU",
@@ -372,7 +372,7 @@ COUNTRY_LOCALE_MAP: Dict[str, Dict[str, Any]] = {
         "longitude": 76.8512,
     },
     "NZ": {
-        "country_name": "뉴질랜드 (New Zealand)",
+        "country_name": "New Zealand",
         "timezone": "Pacific/Auckland",
         "languages": ["en-NZ", "en-US", "en"],
         "ui_language": "en-US",
@@ -906,9 +906,9 @@ def resolve_country_locale(country_code: Optional[str], fallback_ip: str = "") -
             "latitude": 40.7128,
             "longitude": -74.0060,
         }
-    info = COUNTRY_LOCALE_MAP["KR"]
+    info = COUNTRY_LOCALE_MAP["US"]
     return {
-        "country_code": "KR",
+        "country_code": "US",
         "country_name": info["country_name"],
         "timezone": info["timezone"],
         "languages": list(info["languages"]),
@@ -1084,13 +1084,13 @@ def check_proxy_and_resolve_geo(
             with urllib.request.urlopen(req, timeout=2.5) as resp:
                 data = json.loads(resp.read().decode("utf-8", errors="ignore"))
                 if data.get("status") == "success":
-                    cc = str(data.get("countryCode") or country_code or "KR").upper()
+                    cc = str(data.get("countryCode") or country_code or "US").upper()
                     base_locale = resolve_country_locale(cc, data.get("query", ""))
                     tz = str(data.get("timezone") or base_locale["timezone"])
                     return {
                         "ok": True,
                         "source": "live_geoip",
-                        "exit_ip": str(data.get("query") or ip_to_check or "211.234.120.45"),
+                        "exit_ip": str(data.get("query") or ip_to_check or "198.51.100.77"),
                         "country_code": cc,
                         "country_name": f"{data.get('country', '')} ({data.get('city', '')})".strip(),
                         "timezone": tz,
@@ -1108,7 +1108,7 @@ def check_proxy_and_resolve_geo(
     return {
         "ok": True,
         "source": "country_table",
-        "exit_ip": ip_to_check or "211.234.120.45",
+        "exit_ip": ip_to_check or "198.51.100.77",
         "country_code": base_locale["country_code"],
         "country_name": base_locale["country_name"],
         "timezone": prx.get("timezone") or base_locale["timezone"],
@@ -1302,21 +1302,21 @@ def generate_fingerprint_profile(
         "screen_resolution": screen_res,
         "dpr": 2.0 if os_platform in ("macOS", "Android", "iPhone") else 1.0,
         # Proxy-Based Auto Matching Switches (TimeZone / Language / UI Language / Geolocation)
-        "proxy_country": "KR",
+        "proxy_country": "US",
         "follow_proxy_timezone": True,
-        "timezone": "Asia/Seoul",
+        "timezone": "America/New_York",
         "follow_proxy_language": True,
-        "languages": ["ko-KR", "ko", "en-US", "en"],
+        "languages": ["en-US", "en"],
         "follow_proxy_ui_language": False,
-        "ui_language": "ko-KR",
+        "ui_language": "en-US",
         "follow_proxy_geolocation": True,
         "geolocation_enabled": True,
-        "latitude": round(37.5665 + rng.uniform(-0.02, 0.02), 6),
-        "longitude": round(126.9780 + rng.uniform(-0.02, 0.02), 6),
+        "latitude": round(40.7128 + rng.uniform(-0.02, 0.02), 6),
+        "longitude": round(-74.0060 + rng.uniform(-0.02, 0.02), 6),
         "accuracy": rng.choice([25, 50, 100]),
         # WebRTC
         "webrtc_mode": "proxy",  # "proxy" | "forward" | "disable_udp" | "disabled" | "real"
-        "webrtc_public_ip": "211.234.120.45",
+        "webrtc_public_ip": "198.51.100.77",
         "webrtc_local_ip": generate_local_webrtc_ip(pid),
         # Fonts, Device & Stealth
         "disabled_fonts": disabled_fonts,
@@ -1521,27 +1521,27 @@ def compile_profile_configs(
 
     # 0. Resolve Proxy Country / IP -> TimeZone, Languages, UI Language, Geolocation
     proxy_country = str(proxy.get("country") or fp.get("proxy_country") or "").upper()
-    public_ip = str(proxy.get("exit_ip") or fp.get("webrtc_public_ip") or "211.234.120.45")
+    public_ip = str(proxy.get("exit_ip") or fp.get("webrtc_public_ip") or "198.51.100.77")
     proxy_locale = resolve_country_locale(proxy_country, public_ip)
 
     # TimeZone resolution (`follow_proxy_timezone` / `tzAuto`)
     if fp.get("follow_proxy_timezone", False):
-        effective_tz = str(proxy.get("timezone") or proxy_locale["timezone"] or fp.get("timezone") or "Asia/Seoul")
+        effective_tz = str(proxy.get("timezone") or proxy_locale["timezone"] or fp.get("timezone") or "America/New_York")
     else:
-        effective_tz = str(fp.get("timezone") or "Asia/Seoul")
+        effective_tz = str(fp.get("timezone") or "America/New_York")
     effective_tz = effective_tz.replace(" ", "_")
 
     # Browser Languages (`Accept-Language` & `navigator.languages`) resolution (`follow_proxy_language`)
     if fp.get("follow_proxy_language", False):
         effective_langs = list(proxy_locale["languages"])
     else:
-        effective_langs = list(fp.get("languages") or ["ko-KR", "ko", "en-US", "en"])
+        effective_langs = list(fp.get("languages") or ["en-US", "en"])
 
     # UI Language (`--lang`) resolution (`follow_proxy_ui_language`)
     if fp.get("follow_proxy_ui_language", False):
         effective_ui_lang = effective_langs[0] if effective_langs else proxy_locale["ui_language"]
     else:
-        effective_ui_lang = str(fp.get("ui_language") or (effective_langs[0] if effective_langs else "ko-KR"))
+        effective_ui_lang = str(fp.get("ui_language") or (effective_langs[0] if effective_langs else "en-US"))
 
     # Geolocation resolution (`follow_proxy_geolocation`)
     char_offset = ((sum(ord(c) for c in pid) % 40) - 20) * 0.0005
@@ -1551,8 +1551,8 @@ def compile_profile_configs(
         effective_lat = round(base_lat + char_offset, 6)
         effective_lon = round(base_lon + char_offset, 6)
     else:
-        effective_lat = float(fp.get("latitude") if fp.get("latitude") is not None else 37.5665)
-        effective_lon = float(fp.get("longitude") if fp.get("longitude") is not None else 126.9780)
+        effective_lat = float(fp.get("latitude") if fp.get("latitude") is not None else 40.7128)
+        effective_lon = float(fp.get("longitude") if fp.get("longitude") is not None else -74.0060)
     effective_acc = int(fp.get("accuracy") or 50)
 
     # Sidecar file paths using exact MD5 convention
