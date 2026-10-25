@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -615,40 +615,40 @@
 
     <div class="sidebar-cta">
       <button class="btn-new-profile" onclick="openCreateStudioNew()">
-        <span>＋</span> 새 프로파일 생성
+        <span>＋</span> New Profile
       </button>
     </div>
 
     <nav class="nav-list">
-      <div class="nav-section-label">브라우저 프로파일</div>
+      <div class="nav-section-label">Browser Profiles</div>
       <div class="nav-item active" id="nav-profiles" onclick="switchView('profiles')">
-        <span class="nav-item-left">🗂️ 프로파일 관리</span>
+        <span class="nav-item-left">🗂️ Profiles</span>
         <span class="nav-badge" id="badge-profile-count">0</span>
       </div>
       <div class="nav-item" id="nav-create" onclick="openCreateStudioNew()">
-        <span class="nav-item-left">✨ 프로파일 스튜디오</span>
+        <span class="nav-item-left">✨ Profile Studio</span>
       </div>
       <div class="nav-item" id="nav-groups" onclick="switchView('groups')">
-        <span class="nav-item-left">📁 그룹 관리</span>
+        <span class="nav-item-left">📁 Groups</span>
         <span class="nav-badge" id="badge-group-count">0</span>
       </div>
       <div class="nav-item" id="nav-proxies" onclick="switchView('proxies')">
-        <span class="nav-item-left">🌐 프록시 관리</span>
+        <span class="nav-item-left">🌐 Proxies</span>
         <span class="nav-badge" id="badge-proxy-count">0</span>
       </div>
 
-      <div class="nav-section-label">엔진 &amp; 자동화</div>
+      <div class="nav-section-label">Engine &amp; Automation</div>
       <div class="nav-item" id="nav-extensions" onclick="switchView('extensions')">
-        <span class="nav-item-left">🧩 확장프로그램 &amp; 헤더 위조</span>
+        <span class="nav-item-left">🧩 Extensions &amp; Header Forger</span>
       </div>
       <div class="nav-item" id="nav-api" onclick="switchView('api')">
-        <span class="nav-item-left">🔌 Local API &amp; 자동화</span>
+        <span class="nav-item-left">🔌 Local API &amp; Automation</span>
       </div>
       <div class="nav-item" id="nav-kernels" onclick="switchView('kernels')">
-        <span class="nav-item-left">⚙️ 커널 센터 (Tae / Yang)</span>
+        <span class="nav-item-left">⚙️ Kernel Center (Tae / Yang)</span>
       </div>
       <div class="nav-item" onclick="window.open('/verify', '_blank')">
-        <span class="nav-item-left">🧪 실시간 지문 검증기</span>
+        <span class="nav-item-left">🧪 Live Fingerprint Probe</span>
         <span style="font-size:11px;color:var(--tae)">↗</span>
       </div>
     </nav>
@@ -663,7 +663,7 @@
         <span class="mono" style="color:#c084fc" id="side-yang-ver">Gecko 153</span>
       </div>
       <div style="color:var(--text-dim);text-align:center;padding-top:2px;">
-        로컬 전용 · 로그인 불필요 · 100% 독립 실행
+        100% Local · No Cloud Login · Open Source
       </div>
     </div>
   </aside>
@@ -673,18 +673,18 @@
     <!-- Top Header Bar -->
     <header class="topbar">
       <div class="topbar-left">
-        <div class="view-title" id="topbar-title">프로파일 관리 (Profiles)</div>
+        <div class="view-title" id="topbar-title">Browser Profiles (TaeBrowser &amp; YangBrowser)</div>
         <div class="status-chip">
           <span class="dot ok"></span>
-          <span>실행 중인 브라우저: <strong style="color:#34d399" id="active-browser-count">0</strong>개</span>
+          <span>Active Browsers: <strong style="color:#34d399" id="active-browser-count">0</strong></span>
         </div>
         <div class="status-chip mono">
           Local API: 127.0.0.1:50325
         </div>
       </div>
       <div class="topbar-right">
-        <button class="btn btn-sm" onclick="refreshAll()">🔄 새로고침</button>
-        <button class="btn btn-sm btn-danger" onclick="stopAllProfiles()">⏹ 전체 브라우저 종료</button>
+        <button class="btn btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+        <button class="btn btn-sm btn-danger" onclick="stopAllProfiles()">⏹ Stop All Browsers</button>
       </div>
     </header>
 
@@ -692,21 +692,21 @@
     <section class="view-container active" id="view-profiles">
       <div class="toolbar">
         <div class="toolbar-left">
-          <input type="text" id="search-input" placeholder="프로파일 이름, ID, GPU, 메모 검색..." style="width:240px" oninput="loadProfiles()" />
+          <input type="text" id="search-input" placeholder="Search profile name, ID, GPU, notes..." style="width:240px" oninput="loadProfiles()" />
           <select id="filter-group" onchange="loadProfiles()">
-            <option value="">전체 그룹</option>
+            <option value="">All Groups</option>
           </select>
           <select id="filter-kernel" onchange="loadProfiles()">
-            <option value="">전체 브라우저 커널 (TaeBrowser + YangBrowser)</option>
+            <option value="">All Browser Kernels (TaeBrowser + YangBrowser)</option>
             <option value="taebrowser">🟦 TaeBrowser 153 (Chromium 153)</option>
             <option value="yangbrowser">🟪 YangBrowser 153 (Gecko 153)</option>
           </select>
         </div>
         <div class="toolbar-right">
-          <button class="btn btn-sm btn-success" onclick="batchStartSelected()">▶ 선택 일괄 실행</button>
-          <button class="btn btn-sm btn-danger" onclick="batchStopSelected()">⏹ 선택 일괄 종료</button>
-          <button class="btn btn-sm" onclick="batchRandomizeSelected()">🎲 선택 지문 재생성</button>
-          <button class="btn btn-sm btn-primary" onclick="openCreateStudioNew()">＋ 새 프로파일</button>
+          <button class="btn btn-sm btn-success" onclick="batchStartSelected()">▶ Batch Start</button>
+          <button class="btn btn-sm btn-danger" onclick="batchStopSelected()">⏹ Batch Stop</button>
+          <button class="btn btn-sm" onclick="batchRandomizeSelected()">🎲 Batch Randomize</button>
+          <button class="btn btn-sm btn-primary" onclick="openCreateStudioNew()">＋ New Profile</button>
         </div>
       </div>
 
@@ -715,13 +715,13 @@
           <thead>
             <tr>
               <th style="width:34px"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)" /></th>
-              <th style="width:50px">번호</th>
-              <th>프로파일 이름 / ID</th>
-              <th>브라우저 커널</th>
-              <th>OS / 그래픽카드(GPU) &amp; OpenGL/ANGLE</th>
-              <th>프록시 · 타임존 · 언어 연동</th>
-              <th>상태 / 디버그 포트</th>
-              <th style="text-align:right">제어 액션</th>
+              <th style="width:50px">#</th>
+              <th>Profile Name / ID</th>
+              <th>Browser Kernel</th>
+              <th>OS / Graphics Card (GPU) &amp; OpenGL/ANGLE</th>
+              <th>Proxy · TimeZone · Language Sync</th>
+              <th>Status / Debug Port</th>
+              <th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="profiles-tbody"></tbody>
@@ -736,35 +736,35 @@
           <!-- PANEL 1: BASIC & KERNEL -->
           <div class="panel-box">
             <div class="panel-title">
-              <span id="studio-panel1-title">1. 기본 정보 &amp; 브라우저 커널 선택 (TaeBrowser / YangBrowser)</span>
-              <span class="badge badge-tae" id="studio-mode-badge">신규 프로파일 생성 모드</span>
+              <span id="studio-panel1-title">1. Basic Info &amp; Browser Kernel Selection (TaeBrowser / YangBrowser)</span>
+              <span class="badge badge-tae" id="studio-mode-badge">Create New Profile</span>
             </div>
             <input type="hidden" id="np-edit-id" value="" />
             <div class="form-grid">
               <div class="form-group">
-                <label>프로파일 이름</label>
-                <input type="text" id="np-name" placeholder="예: 스토어 계정 #1 (비워두면 자동 생성)" oninput="updateNewProfilePreview()" />
+                <label>Profile Name</label>
+                <input type="text" id="np-name" placeholder="e.g. Store Account #1 (Leave blank to auto-generate)" oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>소속 그룹</label>
+                <label>Group</label>
                 <select id="np-group"></select>
               </div>
               <div class="form-group full">
-                <label>브라우저 커널 선택 (고객 노출 브랜드: TaeBrowser / YangBrowser)</label>
+                <label>Select Browser Kernel (TaeBrowser / YangBrowser)</label>
                 <div class="kernel-cards">
                   <div class="kernel-select-card selected-tae" id="card-kernel-tae" onclick="selectNewProfileKernel('taebrowser')">
                     <h4>
                       <span style="color:var(--tae)">🟦 TaeBrowser 153</span>
                       <span class="badge badge-tae">taebrowser</span>
                     </h4>
-                    <p>Chromium 153.0.8010.27 · <code>TaeBrowser.exe</code> · <code>SunBrowserPolicys</code> C++ 후킹 + ANGLE D3D11/OpenGL/D3D9 + <code>x-browser-validation</code></p>
+                    <p>Chromium 153.0.8010.27 · <code>TaeBrowser.exe</code> · <code>SunBrowserPolicys</code> C++ hooks + ANGLE D3D11/OpenGL/D3D9 + <code>x-browser-validation</code></p>
                   </div>
                   <div class="kernel-select-card" id="card-kernel-yang" onclick="selectNewProfileKernel('yangbrowser')">
                     <h4>
                       <span style="color:#c084fc">🟪 YangBrowser 153</span>
                       <span class="badge badge-yang">yangbrowser</span>
                     </h4>
-                    <p>Gecko / Firefox 153.0.4 · <code>YangBrowser.exe</code> · <code>xul.dll</code> <code>custom.*</code> 37개 C++ 후킹 + <code>prefs.js</code> WebGL/WebGPU/TZ</p>
+                    <p>Gecko / Firefox 153.0.4 · <code>YangBrowser.exe</code> · 37 <code>xul.dll</code> <code>custom.*</code> C++ hooks + <code>prefs.js</code> WebGL/WebGPU/TZ</p>
                   </div>
                 </div>
                 <input type="hidden" id="np-kernel" value="taebrowser" />
@@ -775,11 +775,11 @@
           <!-- PANEL 2: OS & HARDWARE -->
           <div class="panel-box">
             <div class="panel-title">
-              <span>2. 운영체제(OS) &amp; 기본 하드웨어 스펙</span>
+              <span>2. Operating System (OS) &amp; Hardware Specifications</span>
             </div>
             <div class="form-grid">
               <div class="form-group">
-                <label>에뮬레이션 OS 플랫폼</label>
+                <label>Emulated OS Platform</label>
                 <select id="np-os" onchange="onOsChanged()">
                   <option value="Windows">Windows 11 (Win32 / x86_64)</option>
                   <option value="macOS">macOS 14 Sonoma (MacIntel / Apple Silicon)</option>
@@ -789,7 +789,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>화면 해상도 (ScreenSize)</label>
+                <label>Screen Resolution (ScreenSize)</label>
                 <select id="np-res" onchange="updateNewProfilePreview()">
                   <option value="1920_1080">1920 x 1080 (FHD)</option>
                   <option value="2560_1440">2560 x 1440 (QHD)</option>
@@ -800,7 +800,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>CPU 코어 수 (HardwareConcurrency)</label>
+                <label>CPU Cores (HardwareConcurrency)</label>
                 <select id="np-cpu" onchange="updateNewProfilePreview()">
                   <option value="8">8 Cores</option>
                   <option value="4">4 Cores</option>
@@ -811,7 +811,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>메모리 용량 (DeviceMemory)</label>
+                <label>RAM Capacity (DeviceMemory)</label>
                 <select id="np-mem" onchange="updateNewProfilePreview()">
                   <option value="8">8 GB</option>
                   <option value="16">16 GB</option>
@@ -826,21 +826,21 @@
           <!-- PANEL 3: GRAPHICS CARD (GPU) & OPENGL / DIRECT3D / METAL / WEBGL / WEBGPU -->
           <div class="panel-box">
             <div class="panel-title">
-              <span>3. 🎮 그래픽카드(GPU) &amp; OpenGL / Direct3D / Metal / WebGL / WebGPU 설정</span>
-              <button class="btn btn-sm" onclick="pickRandomGpuPreset()">🎲 랜덤 그래픽카드 선택</button>
+              <span>3. 🎮 Graphics Card (GPU) &amp; OpenGL / Direct3D / Metal / WebGL / WebGPU</span>
+              <button class="btn btn-sm" onclick="pickRandomGpuPreset()">🎲 Random GPU Preset</button>
             </div>
             <div class="form-grid">
               <div class="form-group">
-                <label>GPU 하드웨어 가속 &amp; 스푸핑 모드</label>
+                <label>GPU Hardware Acceleration &amp; Spoofing Mode</label>
                 <select id="np-gpu-mode" onchange="updateNewProfilePreview()">
-                  <option value="enabled">활성화 (GPU 가속 + WebGL/WebGPU 위조)</option>
-                  <option value="disabled">비활성화 (--disable-gpu 소프트웨어 렌더러)</option>
+                  <option value="enabled">Enabled (GPU Acceleration + WebGL/WebGPU Spoofing)</option>
+                  <option value="disabled">Disabled (--disable-gpu Software Renderer)</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>그래픽 렌더링 API / ANGLE 백엔드 (--use-angle)</label>
+                <label>Graphics Rendering API / ANGLE Backend (--use-angle)</label>
                 <select id="np-graphics-api" onchange="onGraphicsApiChanged()">
-                  <option value="Direct3D11|d3d11">Direct3D11 (ANGLE D3D11 vs_5_0 ps_5_0 — 표준)</option>
+                  <option value="Direct3D11|d3d11">Direct3D11 (ANGLE D3D11 vs_5_0 ps_5_0 — Standard)</option>
                   <option value="OpenGL|gl">OpenGL 4.6 (ANGLE OpenGL --use-angle=gl)</option>
                   <option value="Direct3D9|d3d9">Direct3D9Ex (ANGLE D3D9 vs_3_0 ps_3_0)</option>
                   <option value="Metal|metal">Apple Metal (macOS M1/M2/M3 Metal API)</option>
@@ -851,26 +851,26 @@
 
               <div class="form-group full">
                 <label>
-                  <span>그래픽카드(GPU) 모델 프리셋 선택 (NVIDIA / AMD / Intel / Apple / Qualcomm / ARM)</span>
+                  <span>Graphics Card (GPU) Preset (NVIDIA / AMD / Intel / Apple / Qualcomm / ARM)</span>
                   <label style="font-size:11px;color:var(--tae);cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-                    <input type="checkbox" id="np-gpu-show-all" onchange="populateGpuPresetSelect()" /> 전체 OS/API 그래픽카드 모두 보기
+                    <input type="checkbox" id="np-gpu-show-all" onchange="populateGpuPresetSelect()" /> Show All OS/API GPUs
                   </label>
                 </label>
                 <select id="np-gpu-preset" onchange="onGpuPresetSelected()"></select>
               </div>
 
               <div class="form-group">
-                <label>WebGL 메타데이터 위조 모드</label>
+                <label>WebGL Metadata Spoofing Mode</label>
                 <select id="np-webgl-meta-mode" onchange="updateNewProfilePreview()">
-                  <option value="custom">커스텀 위조 (선택한 그래픽카드 Vendor/Renderer 주입)</option>
-                  <option value="real">실제 하드웨어 그래픽카드 그대로 노출</option>
+                  <option value="custom">Custom Spoof (Inject Selected GPU Vendor/Renderer)</option>
+                  <option value="real">Expose Real Host Hardware GPU</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>WebGL 캔버스 픽셀 노이즈 (WebGL Image Noise)</label>
+                <label>WebGL ReadPixels Noise (WebGL Image Noise)</label>
                 <select id="np-webgl-noise" onchange="updateNewProfilePreview()">
-                  <option value="1">노이즈 추가 (권장 — 고유 해시 생성)</option>
-                  <option value="0">실제 (변조 안함)</option>
+                  <option value="1">Add Noise (Recommended — Unique Hash)</option>
+                  <option value="0">Real (No Pixel Noise)</option>
                 </select>
               </div>
 
@@ -884,21 +884,21 @@
               </div>
 
               <div class="form-group">
-                <label>WebGL VERSION (7938 — OpenGL / ES 버전 문자열)</label>
+                <label>WebGL VERSION (7938 — OpenGL / ES Version String)</label>
                 <input type="text" id="np-webgl-ver" class="mono" value="WebGL 2.0 (OpenGL ES 3.0 Chromium)" oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>SHADING_LANGUAGE_VERSION (35724 — GLSL 버전)</label>
+                <label>SHADING_LANGUAGE_VERSION (35724 — GLSL Version)</label>
                 <input type="text" id="np-webgl-sl" class="mono" value="WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)" oninput="updateNewProfilePreview()" />
               </div>
 
               <div class="form-group">
-                <label>WebGPU 위조 모드 (navigator.gpu)</label>
+                <label>WebGPU Spoofing Mode (navigator.gpu)</label>
                 <select id="np-webgpu-mode" onchange="updateNewProfilePreview()">
-                  <option value="webgl_based">WebGL 그래픽카드 기반 자동 매칭 (권장)</option>
-                  <option value="custom">커스텀 Vendor / Architecture 직접 지정</option>
-                  <option value="real">실제 WebGPU 어댑터 사용</option>
-                  <option value="disabled">WebGPU 비활성화 (--disable-features=Vulkan,WebGPU)</option>
+                  <option value="webgl_based">Auto-Match Selected WebGL GPU (Recommended)</option>
+                  <option value="custom">Custom Vendor / Architecture</option>
+                  <option value="real">Expose Real WebGPU Adapter</option>
+                  <option value="disabled">Disable WebGPU (--disable-features=Vulkan,WebGPU)</option>
                 </select>
               </div>
               <div class="form-group">
@@ -914,171 +914,171 @@
           <!-- PANEL 4: PROXY & AUTO-FOLLOW TIMEZONE / LANGUAGE / GEOLOCATION -->
           <div class="panel-box">
             <div class="panel-title">
-              <span>4. 🌐 프록시 (SOCKS5 / HTTP 인증) &amp; 타임존 · 언어 · 위치정보 자동 연동</span>
-              <button class="btn btn-sm btn-primary" onclick="checkProxyAndAutoMatch()">🔍 실제 프록시 터널링 IP/국가 조회 및 자동 매칭</button>
+              <span>4. 🌐 Proxy (SOCKS5 / HTTP Auth) &amp; Auto-Follow TimeZone · Language · Geolocation</span>
+              <button class="btn btn-sm btn-primary" onclick="checkProxyAndAutoMatch()">🔍 Test Proxy Tunnel &amp; Auto-Match GeoIP</button>
             </div>
 
             <div class="form-grid" style="margin-bottom:14px;">
               <div class="form-group full" style="background:rgba(56,189,248,0.06);border:1px dashed rgba(56,189,248,0.35);padding:10px 12px;border-radius:8px;">
                 <label style="color:var(--tae);font-weight:700;">
-                  <span>⚡ 프록시 문자열 한 줄 붙여넣기 (자동 파싱: <code>socks5://아이디:비번@호스트:포트</code> 또는 <code>호스트:포트:아이디:비번</code>)</span>
-                  <span style="font-size:11px;color:#34d399;font-weight:500;">붙여넣으면 아래 프로토콜·호스트·포트·아이디·비밀번호 칸에 자동 분리됩니다</span>
+                  <span>⚡ Quick Paste Proxy String (Auto-parses <code>socks5://user:pass@host:port</code> or <code>host:port:user:pass</code>)</span>
+                  <span style="font-size:11px;color:#34d399;font-weight:500;">Automatically populates protocol, host, port, username, and password below</span>
                 </label>
                 <input
                   type="text"
                   id="np-proxy-raw"
                   class="mono"
-                  placeholder="예: socks5://username:password@proxy.example.com:1080"
+                  placeholder="e.g. socks5://username:password@proxy.example.com:1080"
                   oninput="onStudioProxyRawInput(this.value)"
                 />
               </div>
               <div class="form-group">
-                <label>저장된 프록시 불러오기</label>
+                <label>Load Saved Proxy</label>
                 <select id="np-saved-proxy" onchange="applySavedProxyToForm()">
-                  <option value="">직접 입력 / 선택 안함</option>
+                  <option value="">Manual Input / None</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>프록시 출구 국가/지역 (타임존·언어·GPS 기준)</label>
+                <label>Proxy Exit Country/Region (Base for TimeZone · Language · GPS)</label>
                 <select id="np-proxy-country" onchange="onProxyCountryChanged()"></select>
               </div>
               <div class="form-group">
-                <label>프록시 프로토콜 (<code>--proxy-server</code>)</label>
+                <label>Proxy Protocol (<code>--proxy-server</code>)</label>
                 <select id="np-proxy-type" onchange="updateNewProfilePreview()">
-                  <option value="direct">Direct (로컬 직접 연결)</option>
-                  <option value="socks5">SOCKS5 (RFC1929 인증 + UDP 프록시 지원)</option>
-                  <option value="http">HTTP 프록시</option>
-                  <option value="https">HTTPS 프록시</option>
+                  <option value="direct">Direct (No Proxy)</option>
+                  <option value="socks5">SOCKS5 (RFC1929 Auth + UDP Proxy Support)</option>
+                  <option value="http">HTTP Proxy</option>
+                  <option value="https">HTTPS Proxy</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>프록시 호스트 : 포트 (<code>host : port</code>)</label>
+                <label>Proxy Host : Port (<code>host : port</code>)</label>
                 <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;">
-                  <input type="text" id="np-proxy-host" class="mono" placeholder="예: proxy.example.com" oninput="onStudioHostInput(this.value)" />
-                  <input type="number" id="np-proxy-port" class="mono" placeholder="포트 (1080)" oninput="updateNewProfilePreview()" />
+                  <input type="text" id="np-proxy-host" class="mono" placeholder="e.g. proxy.example.com" oninput="onStudioHostInput(this.value)" />
+                  <input type="number" id="np-proxy-port" class="mono" placeholder="Port (1080)" oninput="updateNewProfilePreview()" />
                 </div>
               </div>
               <div class="form-group">
-                <label>프록시 아이디 (<code>ProxyUser</code> / <code>account</code>)</label>
-                <input type="text" id="np-proxy-user" class="mono" placeholder="예: proxy_user (없으면 비워둠)" oninput="updateNewProfilePreview()" />
+                <label>Proxy Username (<code>ProxyUser</code> / <code>account</code>)</label>
+                <input type="text" id="np-proxy-user" class="mono" placeholder="e.g. proxy_user (optional)" oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>프록시 비밀번호 (<code>ProxyPassword</code> / <code>password</code>)</label>
-                <input type="text" id="np-proxy-pass" class="mono" placeholder="예: proxy_password (없으면 비워둠)" oninput="updateNewProfilePreview()" />
+                <label>Proxy Password (<code>ProxyPassword</code> / <code>password</code>)</label>
+                <input type="text" id="np-proxy-pass" class="mono" placeholder="e.g. proxy_password (optional)" oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>WebRTC 모드</label>
+                <label>WebRTC Mode</label>
                 <select id="np-webrtc-mode" onchange="updateNewProfilePreview()">
-                  <option value="proxy">프록시 공인 IP로 치환 (권장)</option>
-                  <option value="disable_udp">UDP 차단 / SOCKS5 UDP Proxy (WebRTCSocks5UdpProxy)</option>
-                  <option value="disabled">WebRTC 완전 비활성화</option>
-                  <option value="real">실제 IP 사용</option>
+                  <option value="proxy">Replace with Proxy Public IP (Recommended)</option>
+                  <option value="disable_udp">Block UDP / SOCKS5 UDP Proxy (WebRTCSocks5UdpProxy)</option>
+                  <option value="disabled">Disable WebRTC Completely</option>
+                  <option value="real">Expose Real IP</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>프록시 출구 공인 IP / WebRTC 공인 IP (<code>WebRTCAddress</code>)</label>
-                <input type="text" id="np-webrtc-ip" class="mono" value="211.234.120.45" oninput="updateNewProfilePreview()" />
+                <label>Proxy Exit Public IP / WebRTC Public IP (<code>WebRTCAddress</code>)</label>
+                <input type="text" id="np-webrtc-ip" class="mono" value="198.51.100.77" oninput="updateNewProfilePreview()" />
               </div>
             </div>
 
             <!-- Proxy Follow Rule 1: TimeZone -->
             <div class="proxy-follow-row">
               <div class="proxy-follow-left">
-                <div class="proxy-follow-title">🕒 타임존(TimeZone) 프록시 따라가기</div>
-                <div class="proxy-follow-desc">활성화 시 프록시 IP/국가의 IANA 타임존(예: America/New_York, Asia/Tokyo)을 자동으로 따라갑니다.</div>
+                <div class="proxy-follow-title">🕒 Auto-Follow Proxy TimeZone</div>
+                <div class="proxy-follow-desc">Automatically matches the IANA timezone (e.g., America/New_York, Asia/Tokyo) of the proxy IP/country.</div>
               </div>
               <div class="seg-group">
-                <button type="button" class="seg-btn active" id="btn-follow-tz-on" onclick="setFollowSwitch('tz', true)">🔗 프록시 따라가기 (자동)</button>
-                <button type="button" class="seg-btn" id="btn-follow-tz-off" onclick="setFollowSwitch('tz', false)">✋ 수동 지정</button>
+                <button type="button" class="seg-btn active" id="btn-follow-tz-on" onclick="setFollowSwitch('tz', true)">🔗 Follow Proxy (Auto)</button>
+                <button type="button" class="seg-btn" id="btn-follow-tz-off" onclick="setFollowSwitch('tz', false)">✋ Manual</button>
               </div>
             </div>
             <div class="form-group full" style="margin-bottom:12px;">
               <label>
-                <span>적용될 IANA 타임존 (TimeZone)</span>
-                <span id="lbl-tz-mode" style="color:#34d399;font-size:11px;">🔗 프록시 국가 기준 자동 매칭 중</span>
+                <span>Effective IANA TimeZone</span>
+                <span id="lbl-tz-mode" style="color:#34d399;font-size:11px;">🔗 Auto-matching proxy country</span>
               </label>
-              <input type="text" id="np-tz" class="mono" value="Asia/Seoul" disabled oninput="updateNewProfilePreview()" />
+              <input type="text" id="np-tz" class="mono" value="America/New_York" disabled oninput="updateNewProfilePreview()" />
             </div>
 
             <!-- Proxy Follow Rule 2: Browser Languages (Accept-Language / navigator.languages) -->
             <div class="proxy-follow-row">
               <div class="proxy-follow-left">
-                <div class="proxy-follow-title">🗣️ 브라우저 언어(Languages / Accept-Language) 프록시 따라가기</div>
-                <div class="proxy-follow-desc">활성화 시 프록시 IP 국가에 맞춰 <code>navigator.languages</code> 및 HTTP <code>Accept-Language</code> 헤더를 자동 설정합니다.</div>
+                <div class="proxy-follow-title">🗣️ Auto-Follow Proxy Browser Languages (Accept-Language)</div>
+                <div class="proxy-follow-desc">Automatically sets <code>navigator.languages</code> and HTTP <code>Accept-Language</code> headers based on the proxy country.</div>
               </div>
               <div class="seg-group">
-                <button type="button" class="seg-btn active" id="btn-follow-lang-on" onclick="setFollowSwitch('lang', true)">🔗 프록시 따라가기 (자동)</button>
-                <button type="button" class="seg-btn" id="btn-follow-lang-off" onclick="setFollowSwitch('lang', false)">✋ 수동 지정</button>
+                <button type="button" class="seg-btn active" id="btn-follow-lang-on" onclick="setFollowSwitch('lang', true)">🔗 Follow Proxy (Auto)</button>
+                <button type="button" class="seg-btn" id="btn-follow-lang-off" onclick="setFollowSwitch('lang', false)">✋ Manual</button>
               </div>
             </div>
             <div class="form-group full" style="margin-bottom:12px;">
               <label>
-                <span>적용될 브라우저 언어 목록 (쉼표 구분 — 첫번째가 주 언어 <code>navigator.language</code>)</span>
-                <span id="lbl-lang-mode" style="color:#34d399;font-size:11px;">🔗 프록시 국가 기준 자동 매칭 중</span>
+                <span>Effective Browser Languages (Comma-separated — first is primary <code>navigator.language</code>)</span>
+                <span id="lbl-lang-mode" style="color:#34d399;font-size:11px;">🔗 Auto-matching proxy country</span>
               </label>
-              <input type="text" id="np-langs" class="mono" value="ko-KR, ko, en-US, en" disabled oninput="updateNewProfilePreview()" />
+              <input type="text" id="np-langs" class="mono" value="en-US, en" disabled oninput="updateNewProfilePreview()" />
             </div>
 
             <!-- Proxy Follow Rule 3: Browser UI Interface Language (--lang) -->
             <div class="proxy-follow-row">
               <div class="proxy-follow-left">
-                <div class="proxy-follow-title">🖥️ 브라우저 인터페이스(UI) 언어 (<code>--lang</code>) 프록시 따라가기</div>
-                <div class="proxy-follow-desc">브라우저 메뉴 및 <code>Intl</code> 기본 로케일이 프록시 언어를 따라갈지, 특정 언어로 고정할지 설정합니다.</div>
+                <div class="proxy-follow-title">🖥️ Auto-Follow Proxy Browser UI Language (<code>--lang</code>)</div>
+                <div class="proxy-follow-desc">Controls whether the browser UI locale and default <code>Intl</code> locale follow the proxy or stay fixed.</div>
               </div>
               <div class="seg-group">
-                <button type="button" class="seg-btn active" id="btn-follow-uilang-on" onclick="setFollowSwitch('uilang', true)">🔗 프록시 따라가기 (자동)</button>
-                <button type="button" class="seg-btn" id="btn-follow-uilang-off" onclick="setFollowSwitch('uilang', false)">✋ 수동 고정</button>
+                <button type="button" class="seg-btn active" id="btn-follow-uilang-on" onclick="setFollowSwitch('uilang', true)">🔗 Follow Proxy (Auto)</button>
+                <button type="button" class="seg-btn" id="btn-follow-uilang-off" onclick="setFollowSwitch('uilang', false)">✋ Manual</button>
               </div>
             </div>
             <div class="form-group full" style="margin-bottom:12px;">
               <label>
-                <span>적용될 브라우저 UI 언어 코드 (<code>--lang</code> / <code>ISOLATE_DEFAULT_LOCALE</code>)</span>
-                <span id="lbl-uilang-mode" style="color:#34d399;font-size:11px;">🔗 프록시 국가 기준 자동 매칭 중</span>
+                <span>Effective Browser UI Language Code (<code>--lang</code> / <code>ISOLATE_DEFAULT_LOCALE</code>)</span>
+                <span id="lbl-uilang-mode" style="color:#34d399;font-size:11px;">🔗 Auto-matching proxy country</span>
               </label>
-              <input type="text" id="np-ui-lang" class="mono" value="ko-KR" disabled oninput="updateNewProfilePreview()" />
+              <input type="text" id="np-ui-lang" class="mono" value="en-US" disabled oninput="updateNewProfilePreview()" />
             </div>
 
             <!-- Proxy Follow Rule 4: Geolocation (GPS Latitude / Longitude) -->
             <div class="proxy-follow-row">
               <div class="proxy-follow-left">
-                <div class="proxy-follow-title">📍 위치정보(Geolocation GPS 위도·경도) 프록시 따라가기</div>
-                <div class="proxy-follow-desc"><code>navigator.geolocation</code> 호출 시 프록시 국가/도시의 GPS 좌표를 자동으로 반환할지 설정합니다.</div>
+                <div class="proxy-follow-title">📍 Auto-Follow Proxy Geolocation (GPS Latitude / Longitude)</div>
+                <div class="proxy-follow-desc">Automatically returns the GPS coordinates of the proxy country/city when <code>navigator.geolocation</code> is queried.</div>
               </div>
               <div class="seg-group">
-                <button type="button" class="seg-btn active" id="btn-follow-geo-on" onclick="setFollowSwitch('geo', true)">🔗 프록시 따라가기 (자동)</button>
-                <button type="button" class="seg-btn" id="btn-follow-geo-off" onclick="setFollowSwitch('geo', false)">✋ 수동 좌표 입력</button>
+                <button type="button" class="seg-btn active" id="btn-follow-geo-on" onclick="setFollowSwitch('geo', true)">🔗 Follow Proxy (Auto)</button>
+                <button type="button" class="seg-btn" id="btn-follow-geo-off" onclick="setFollowSwitch('geo', false)">✋ Manual Coordinates</button>
               </div>
             </div>
             <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;">
               <div class="form-group">
-                <label>위도 (Latitude)</label>
-                <input type="number" step="0.0001" id="np-lat" class="mono" value="37.5665" disabled oninput="updateNewProfilePreview()" />
+                <label>Latitude</label>
+                <input type="number" step="0.0001" id="np-lat" class="mono" value="40.7128" disabled oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>경도 (Longitude)</label>
-                <input type="number" step="0.0001" id="np-lon" class="mono" value="126.9780" disabled oninput="updateNewProfilePreview()" />
+                <label>Longitude</label>
+                <input type="number" step="0.0001" id="np-lon" class="mono" value="-74.0060" disabled oninput="updateNewProfilePreview()" />
               </div>
               <div class="form-group">
-                <label>정확도 (Accuracy m)</label>
+                <label>Accuracy (m)</label>
                 <input type="number" id="np-acc" class="mono" value="45" oninput="updateNewProfilePreview()" />
               </div>
             </div>
 
             <div class="form-grid">
               <div class="form-group">
-                <label>시작 URL (쉼표 구분, 비워두면 지문 검증 페이지 오픈)</label>
-                <input type="text" id="np-urls" placeholder="예: https://www.google.com" />
+                <label>Startup URLs (Comma-separated, defaults to live fingerprint probe)</label>
+                <input type="text" id="np-urls" placeholder="e.g. https://www.google.com" />
               </div>
               <div class="form-group">
-                <label>메모 (Notes)</label>
-                <input type="text" id="np-notes" placeholder="프로파일 용도나 계정 메모를 입력하세요" />
+                <label>Notes</label>
+                <input type="text" id="np-notes" placeholder="Enter profile purpose or account notes" />
               </div>
             </div>
 
             <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
-              <button class="btn" onclick="switchView('profiles')">취소</button>
-              <button class="btn btn-primary" id="btn-save-profile" onclick="submitSaveProfile(false)">💾 프로파일 저장</button>
-              <button class="btn btn-success" id="btn-save-launch-profile" onclick="submitSaveProfile(true)">🚀 저장 후 즉시 브라우저 열기</button>
+              <button class="btn" onclick="switchView('profiles')">Cancel</button>
+              <button class="btn btn-primary" id="btn-save-profile" onclick="submitSaveProfile(false)">💾 Save Profile</button>
+              <button class="btn btn-success" id="btn-save-launch-profile" onclick="submitSaveProfile(true)">🚀 Save &amp; Launch Browser</button>
             </div>
           </div>
         </div>
@@ -1087,7 +1087,7 @@
         <div style="position:sticky;top:0;">
           <div class="panel-box">
             <div class="panel-title">
-              <span>🔍 실시간 프로파일 지문 &amp; 그래픽카드/프록시 요약</span>
+              <span>🔍 Live Fingerprint &amp; GPU/Proxy Summary</span>
               <span class="badge badge-tae" id="preview-kernel-badge">TaeBrowser 153</span>
             </div>
             <div class="kv-list" id="np-preview-list"></div>
@@ -1100,23 +1100,23 @@
     <section class="view-container" id="view-groups">
       <div class="panel-box" style="max-width:720px">
         <div class="panel-title">
-          <span>📁 새 그룹 추가</span>
+          <span>📁 Add New Group</span>
         </div>
         <div style="display:flex;gap:10px;">
-          <input type="text" id="grp-name" placeholder="그룹 이름 (예: 쿠팡 셀러 계정)" style="flex:1" />
-          <input type="text" id="grp-remark" placeholder="설명 / 비고" style="flex:1.3" />
-          <button class="btn btn-primary" onclick="createGroup()">＋ 그룹 생성</button>
+          <input type="text" id="grp-name" placeholder="Group Name (e.g. E-Commerce Sellers)" style="flex:1" />
+          <input type="text" id="grp-remark" placeholder="Description / Remark" style="flex:1.3" />
+          <button class="btn btn-primary" onclick="createGroup()">＋ Create Group</button>
         </div>
       </div>
       <div class="table-card" style="max-width:920px">
         <table>
           <thead>
             <tr>
-              <th>그룹 ID</th>
-              <th>그룹 이름</th>
-              <th>설명 / 비고</th>
-              <th>소속 프로파일 수</th>
-              <th style="text-align:right">관리</th>
+              <th>Group ID</th>
+              <th>Group Name</th>
+              <th>Remark</th>
+              <th>Profiles</th>
+              <th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="groups-tbody"></tbody>
@@ -1128,28 +1128,28 @@
     <section class="view-container" id="view-proxies">
       <div class="panel-box">
         <div class="panel-title">
-          <span>🌐 새 프록시 등록 (SOCKS5 / HTTP 아이디·비밀번호 &amp; 국가별 타임존·언어 자동 매칭)</span>
-          <button class="btn btn-sm btn-primary" onclick="testNewProxyInManager()">🔍 프록시 연결 테스트 &amp; 출구 IP 자동 조회</button>
+          <span>🌐 Register New Proxy (SOCKS5 / HTTP Auth &amp; Auto Country TimeZone/Language Matching)</span>
+          <button class="btn btn-sm btn-primary" onclick="testNewProxyInManager()">🔍 Test Proxy Connection &amp; Lookup Exit IP</button>
         </div>
         <div class="form-group full" style="margin-bottom:12px;background:rgba(56,189,248,0.06);border:1px dashed rgba(56,189,248,0.35);padding:10px 12px;border-radius:8px;">
           <label style="color:var(--tae);font-weight:700;">
-            <span>⚡ 프록시 한 줄 붙여넣기 (<code>socks5://user:pass@host:port</code> 또는 <code>host:port:user:pass</code>)</span>
+            <span>⚡ Quick Paste Proxy String (<code>socks5://user:pass@host:port</code> or <code>host:port:user:pass</code>)</span>
           </label>
           <input
             type="text"
             id="prx-raw"
             class="mono"
-            placeholder="예: socks5://username:password@proxy.example.com:1080"
+            placeholder="e.g. socks5://username:password@proxy.example.com:1080"
             oninput="onManagerProxyRawInput(this.value)"
           />
         </div>
         <div class="form-grid" style="grid-template-columns: repeat(3, 1fr);">
           <div class="form-group">
-            <label>별칭 (Name)</label>
+            <label>Proxy Name (Alias)</label>
             <input type="text" id="prx-name" placeholder="Residential SOCKS5 #1" />
           </div>
           <div class="form-group">
-            <label>프로토콜 (Type)</label>
+            <label>Protocol (Type)</label>
             <select id="prx-type">
               <option value="socks5">SOCKS5</option>
               <option value="http">HTTP</option>
@@ -1158,31 +1158,31 @@
             </select>
           </div>
           <div class="form-group">
-            <label>호스트 : 포트 (Host : Port)</label>
+            <label>Host : Port</label>
             <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px;">
               <input type="text" id="prx-host" class="mono" placeholder="proxy.example.com" />
               <input type="number" id="prx-port" class="mono" placeholder="1080" />
             </div>
           </div>
           <div class="form-group">
-            <label>프록시 아이디 (<code>ProxyUser</code>)</label>
+            <label>Proxy Username (<code>ProxyUser</code>)</label>
             <input type="text" id="prx-user" class="mono" placeholder="proxy_user" />
           </div>
           <div class="form-group">
-            <label>프록시 비밀번호 (<code>ProxyPassword</code>)</label>
+            <label>Proxy Password (<code>ProxyPassword</code>)</label>
             <input type="text" id="prx-pass" class="mono" placeholder="proxy_password" />
           </div>
           <div class="form-group">
-            <label>국가 / 출구 IP / 타임존</label>
+            <label>Country / Exit IP / TimeZone</label>
             <div style="display:grid;grid-template-columns:1fr 1.1fr 1.1fr;gap:6px;">
               <select id="prx-country" onchange="onNewProxyCountrySelect()"></select>
-              <input type="text" id="prx-exit-ip" class="mono" placeholder="자동 조회됨" />
-              <input type="text" id="prx-tz" class="mono" value="Asia/Seoul" />
+              <input type="text" id="prx-exit-ip" class="mono" placeholder="Auto-detected" />
+              <input type="text" id="prx-tz" class="mono" value="America/New_York" />
             </div>
           </div>
         </div>
         <div style="margin-top:12px;display:flex;justify-content:flex-end;">
-          <button class="btn btn-primary" onclick="createProxy()">＋ 프록시 저장</button>
+          <button class="btn btn-primary" onclick="createProxy()">＋ Save Proxy</button>
         </div>
       </div>
 
@@ -1190,14 +1190,14 @@
         <table>
           <thead>
             <tr>
-              <th>이름</th>
-              <th>국가</th>
-              <th>타입</th>
-              <th>호스트 : 포트</th>
-              <th>인증 아이디 (ProxyUser)</th>
-              <th>WebRTC 출구 IP</th>
-              <th>자동 연동 타임존 / 언어</th>
-              <th style="text-align:right">관리</th>
+              <th>Name</th>
+              <th>Country</th>
+              <th>Type</th>
+              <th>Host : Port</th>
+              <th>Username (ProxyUser)</th>
+              <th>WebRTC Exit IP</th>
+              <th>Auto-Synced TimeZone / Language</th>
+              <th style="text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody id="proxies-tbody"></tbody>
@@ -1210,22 +1210,22 @@
       <div class="studio-grid">
         <div class="panel-box">
           <div class="panel-title">
-            <span>🔐 Google Chrome x-browser-validation SHA-1 헤더 계산기</span>
+            <span>🔐 Google Chrome x-browser-validation SHA-1 Header Forger</span>
           </div>
           <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">
-            <strong>TaeBrowser 153</strong> 내장 확장프로그램(<code>freeanti_assistant</code>)은 <code>accounts.google.com</code> 및 <code>*.Google.com</code> 요청 시 OS별 Google Chrome 공식 시드 키를 조합한 <code>x-browser-validation</code> SHA-1 다이제스트를 자동 주입합니다.
+            The built-in <strong>TaeBrowser 153</strong> extension (<code>freeanti_assistant</code>) automatically injects the OS-specific Google Chrome <code>x-browser-validation</code> SHA-1 digest on requests to <code>accounts.google.com</code> and <code>*.google.com</code>.
           </p>
           <div class="form-group" style="margin-bottom:10px;">
-            <label>테스트할 User-Agent 문자열</label>
+            <label>User-Agent String to Test</label>
             <input type="text" id="val-ua-input" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36" />
           </div>
-          <button class="btn btn-primary btn-sm" onclick="testChromeValidation()">SHA-1 헤더 계산 실행</button>
+          <button class="btn btn-primary btn-sm" onclick="testChromeValidation()">Compute SHA-1 Headers</button>
           <pre class="code-box" id="val-output" style="margin-top:12px;"></pre>
         </div>
 
         <div class="panel-box">
           <div class="panel-title">
-            <span>🧩 내장 스텔스 확장프로그램 상태</span>
+            <span>🧩 Built-in Stealth Extensions Status</span>
           </div>
           <div class="kv-list" id="ext-list-box"></div>
         </div>
@@ -1237,34 +1237,34 @@
       <div class="studio-grid">
         <div class="panel-box">
           <div class="panel-title">
-            <span>🔌 Local REST API 엔드포인트 (포트 50325)</span>
+            <span>🔌 Local REST API Endpoints (Port 50325)</span>
           </div>
           <div class="kv-list">
-            <div class="kv-row"><span class="kv-key">브라우저 실행 (v1/v2)</span><span class="kv-val mono">GET/POST /api/v1/browser/start?user_id=fa1001win</span></div>
-            <div class="kv-row"><span class="kv-key">브라우저 종료 (v1/v2)</span><span class="kv-val mono">GET/POST /api/v1/browser/stop?user_id=fa1001win</span></div>
-            <div class="kv-row"><span class="kv-key">활성 상태 조회</span><span class="kv-val mono">GET /api/v1/browser/active?user_id=fa1001win</span></div>
-            <div class="kv-row"><span class="kv-key">프로파일 목록</span><span class="kv-val mono">GET /api/v1/user/list</span></div>
-            <div class="kv-row"><span class="kv-key">커널 목록 (Tae/Yang)</span><span class="kv-val mono">GET /api/v2/browser-profile/kernels</span></div>
-            <div class="kv-row"><span class="kv-key">GPU 카탈로그 &amp; 국가 로케일</span><span class="kv-val mono">GET /api/freeanti/gpu-catalog</span></div>
-            <div class="kv-row"><span class="kv-key">프록시 GeoIP 타임존/언어 확인</span><span class="kv-val mono">POST /api/freeanti/proxy-check</span></div>
-            <div class="kv-row"><span class="kv-key">실시간 지문 Hot-Reload</span><span class="kv-val mono">POST /api/freeanti/profiles/{id}/dynamic-update</span></div>
+            <div class="kv-row"><span class="kv-key">Start Browser (v1/v2)</span><span class="kv-val mono">GET/POST /api/v1/browser/start?user_id=fa1001win</span></div>
+            <div class="kv-row"><span class="kv-key">Stop Browser (v1/v2)</span><span class="kv-val mono">GET/POST /api/v1/browser/stop?user_id=fa1001win</span></div>
+            <div class="kv-row"><span class="kv-key">Check Active Status</span><span class="kv-val mono">GET /api/v1/browser/active?user_id=fa1001win</span></div>
+            <div class="kv-row"><span class="kv-key">List Profiles</span><span class="kv-val mono">GET /api/v1/user/list</span></div>
+            <div class="kv-row"><span class="kv-key">List Kernels (Tae/Yang)</span><span class="kv-val mono">GET /api/v2/browser-profile/kernels</span></div>
+            <div class="kv-row"><span class="kv-key">GPU Catalog &amp; Country Locales</span><span class="kv-val mono">GET /api/freeanti/gpu-catalog</span></div>
+            <div class="kv-row"><span class="kv-key">Proxy GeoIP TimeZone/Lang Check</span><span class="kv-val mono">POST /api/freeanti/proxy-check</span></div>
+            <div class="kv-row"><span class="kv-key">Live Fingerprint Hot-Reload</span><span class="kv-val mono">POST /api/freeanti/profiles/{id}/dynamic-update</span></div>
           </div>
         </div>
 
         <div class="panel-box">
           <div class="panel-title">
-            <span>🐍 Python Selenium / Playwright 연동 예제 (TaeBrowser &amp; YangBrowser)</span>
+            <span>🐍 Python Selenium / Playwright Example (TaeBrowser &amp; YangBrowser)</span>
           </div>
           <pre class="code-box">import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
-# 1. freeanti Local API로 TaeBrowser 153 또는 YangBrowser 153 실행
+# 1. Start TaeBrowser 153 or YangBrowser 153 via Local API
 resp = requests.get("http://127.0.0.1:50325/api/v1/browser/start", params={"user_id": "fa1001win"}).json()
 data = resp["data"]
 
-# 2. 반환된 WebDriver 및 디버그 포트로 즉시 연결
+# 2. Connect directly to the returned WebDriver &amp; CDP debugging port
 opts = Options()
 opts.add_experimental_option("debuggerAddress", data["ws"]["selenium"])
 driver = webdriver.Chrome(service=Service(data["webdriver"]), options=opts)
@@ -1278,13 +1278,13 @@ print("Connected to:", driver.title)</pre>
       <div class="studio-grid">
         <div class="panel-box">
           <div class="panel-title">
-            <span>🟦 TaeBrowser 153 &amp; 🟪 YangBrowser 153 바이너리 정보</span>
+            <span>🟦 TaeBrowser 153 &amp; 🟪 YangBrowser 153 Kernel Binaries</span>
           </div>
           <div class="kv-list" id="kernels-detail-box"></div>
         </div>
         <div class="panel-box">
           <div class="panel-title">
-            <span>📜 최근 브라우저 실행 로그 (Launch Logs)</span>
+            <span>📜 Recent Browser Launch Logs</span>
           </div>
           <div class="kv-list" id="logs-detail-box"></div>
         </div>
@@ -1300,48 +1300,48 @@ print("Connected to:", driver.title)</pre>
         <div style="font-size:11.5px;color:var(--text-muted);" id="insp-sub">MD5 Sidecars &amp; --extended-parameters</div>
       </div>
       <div style="display:flex;gap:6px;">
-        <button class="btn btn-sm btn-primary" onclick="editFromInspector()">✏️ 프로파일 설정 수정</button>
-        <button class="btn btn-sm" onclick="closeInspector()">✕ 닫기</button>
+        <button class="btn btn-sm btn-primary" onclick="editFromInspector()">✏️ Edit Profile</button>
+        <button class="btn btn-sm" onclick="closeInspector()">✕ Close</button>
       </div>
     </div>
     <div class="drawer-body">
       <div class="panel-box" style="margin-bottom:0">
         <div class="panel-title">
-          <span>⚡ 실시간 DynamicConfig Hot-Reload (무중단 IP/타임존 변경)</span>
+          <span>⚡ Live DynamicConfig Hot-Reload (Zero-Downtime IP / TimeZone Update)</span>
         </div>
         <p style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px;">
-          <strong>TaeBrowser</strong> 및 <strong>YangBrowser</strong>가 실행 중일 때 재시작 없이 <code>md5(id + "_webrtc")</code> 사이드카를 갱신하여 즉시 반영합니다.
+          Updates the <code>md5(id + "_webrtc")</code> sidecar on the fly while <strong>TaeBrowser</strong> or <strong>YangBrowser</strong> is running — no browser restart needed.
         </p>
         <div class="form-grid">
           <div class="form-group">
-            <label>새 WebRTC 공인 IP</label>
+            <label>New WebRTC Public IP</label>
             <input type="text" id="dyn-ip" placeholder="198.51.100.77" />
           </div>
           <div class="form-group">
-            <label>새 타임존 (TimeZone)</label>
+            <label>New TimeZone</label>
             <input type="text" id="dyn-tz" placeholder="America/New_York" />
           </div>
           <div class="form-group">
-            <label>위도 (Latitude)</label>
-            <input type="number" step="0.0001" id="dyn-lat" placeholder="37.5665" />
+            <label>Latitude</label>
+            <input type="number" step="0.0001" id="dyn-lat" placeholder="40.7128" />
           </div>
           <div class="form-group">
-            <label>경도 (Longitude)</label>
-            <input type="number" step="0.0001" id="dyn-lon" placeholder="126.9780" />
+            <label>Longitude</label>
+            <input type="number" step="0.0001" id="dyn-lon" placeholder="-74.0060" />
           </div>
         </div>
         <div style="margin-top:10px;display:flex;justify-content:flex-end;">
-          <button class="btn btn-sm btn-primary" onclick="applyDynamicHotReload()">⚡ 즉시 핫리로드 적용</button>
+          <button class="btn btn-sm btn-primary" onclick="applyDynamicHotReload()">⚡ Apply Hot-Reload Now</button>
         </div>
       </div>
 
       <div>
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">실행 바이너리 &amp; 명령줄 (Command Line — ANGLE/OpenGL/Lang 포함)</div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">Executable &amp; Command Line (Includes ANGLE / OpenGL / Lang Flags)</div>
         <pre class="code-box" id="insp-cmdline"></pre>
       </div>
 
       <div>
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">프록시 연동 최종 로케일 / 타임존 / 언어 해석 결과 (resolved_locale)</div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">Resolved Proxy Locale / TimeZone / Languages (resolved_locale)</div>
         <pre class="code-box" id="insp-locale"></pre>
       </div>
 
@@ -1351,7 +1351,7 @@ print("Connected to:", driver.title)</pre>
       </div>
 
       <div>
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">Decoded _static Sidecar JSON (WebGL / OpenGL / WebGPU 포함)</div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">Decoded _static Sidecar JSON (Includes WebGL / OpenGL / WebGPU)</div>
         <pre class="code-box" id="insp-static"></pre>
       </div>
     </div>
@@ -1401,13 +1401,13 @@ print("Connected to:", driver.title)</pre>
       if (nav) nav.classList.add("active");
 
       const titles = {
-        profiles: "프로파일 관리 (TaeBrowser & YangBrowser)",
-        create: "프로파일 스튜디오 — 그래픽카드(OpenGL/D3D11/Metal) & 프록시 타임존·언어 설정",
-        groups: "그룹 관리 (Profile Groups)",
-        proxies: "프록시 관리 (Proxy Pool)",
-        extensions: "확장프로그램 & Google Chrome 헤더 위조",
-        api: "Local API & 자동화 연동",
-        kernels: "커널 센터 — TaeBrowser 153 & YangBrowser 153",
+        profiles: "Browser Profiles (TaeBrowser & YangBrowser)",
+        create: "Profile Studio — GPU (OpenGL/D3D11/Metal) & Proxy TimeZone/Language Sync",
+        groups: "Profile Groups",
+        proxies: "Proxy Pool Manager",
+        extensions: "Extensions & Google Chrome Header Forger",
+        api: "Local API & Automation Integration",
+        kernels: "Kernel Center — TaeBrowser 153 & YangBrowser 153",
       };
       document.getElementById("topbar-title").textContent = titles[viewName] || "Free Proxy Browser";
 
@@ -1524,7 +1524,7 @@ print("Connected to:", driver.title)</pre>
       const idx = Math.floor(Math.random() * sel.options.length);
       sel.selectedIndex = idx;
       onGpuPresetSelected();
-      showToast("🎲 그래픽카드 프리셋이 랜덤 선택되었습니다.");
+      showToast("🎲 Random GPU preset selected.");
     }
 
     function setFollowSwitch(kind, follow) {
@@ -1534,7 +1534,7 @@ print("Connected to:", driver.title)</pre>
         document.getElementById("btn-follow-tz-off").className = "seg-btn" + (!follow ? " active" : "");
         document.getElementById("np-tz").disabled = follow;
         const lbl = document.getElementById("lbl-tz-mode");
-        lbl.textContent = follow ? "🔗 프록시 국가 기준 자동 매칭 중" : "✋ 수동 타임존 입력 활성";
+        lbl.textContent = follow ? "🔗 Auto-matching proxy country" : "✋ Manual TimeZone input enabled";
         lbl.style.color = follow ? "#34d399" : "#fbbf24";
       } else if (kind === "lang") {
         STATE.followLang = follow;
@@ -1542,7 +1542,7 @@ print("Connected to:", driver.title)</pre>
         document.getElementById("btn-follow-lang-off").className = "seg-btn" + (!follow ? " active" : "");
         document.getElementById("np-langs").disabled = follow;
         const lbl = document.getElementById("lbl-lang-mode");
-        lbl.textContent = follow ? "🔗 프록시 국가 기준 자동 매칭 중" : "✋ 수동 언어 목록 입력 활성";
+        lbl.textContent = follow ? "🔗 Auto-matching proxy country" : "✋ Manual language list enabled";
         lbl.style.color = follow ? "#34d399" : "#fbbf24";
       } else if (kind === "uilang") {
         STATE.followUiLang = follow;
@@ -1550,7 +1550,7 @@ print("Connected to:", driver.title)</pre>
         document.getElementById("btn-follow-uilang-off").className = "seg-btn" + (!follow ? " active" : "");
         document.getElementById("np-ui-lang").disabled = follow;
         const lbl = document.getElementById("lbl-uilang-mode");
-        lbl.textContent = follow ? "🔗 프록시 국가 기준 자동 매칭 중" : "✋ 수동 UI 언어 고정 활성";
+        lbl.textContent = follow ? "🔗 Auto-matching proxy country" : "✋ Manual UI language enabled";
         lbl.style.color = follow ? "#34d399" : "#fbbf24";
       } else if (kind === "geo") {
         STATE.followGeo = follow;
@@ -1569,21 +1569,21 @@ print("Connected to:", driver.title)</pre>
     }
 
     function syncProxyCountryToFollowFields() {
-      const code = document.getElementById("np-proxy-country").value || "KR";
-      const loc = STATE.countryLocales[code] || STATE.countryLocales["KR"];
+      const code = document.getElementById("np-proxy-country").value || "US";
+      const loc = STATE.countryLocales[code] || STATE.countryLocales["US"];
       if (!loc) return;
       if (STATE.followTz) {
         document.getElementById("np-tz").value = loc.timezone;
       }
       if (STATE.followLang) {
-        document.getElementById("np-langs").value = (loc.languages || ["ko-KR", "ko"]).join(", ");
+        document.getElementById("np-langs").value = (loc.languages || ["en-US", "en"]).join(", ");
       }
       if (STATE.followUiLang) {
-        document.getElementById("np-ui-lang").value = loc.ui_language || "ko-KR";
+        document.getElementById("np-ui-lang").value = loc.ui_language || "en-US";
       }
       if (STATE.followGeo) {
-        document.getElementById("np-lat").value = loc.latitude ?? loc.lat ?? 37.5665;
-        document.getElementById("np-lon").value = loc.longitude ?? loc.lon ?? 126.9780;
+        document.getElementById("np-lat").value = loc.latitude ?? loc.lat ?? 40.7128;
+        document.getElementById("np-lon").value = loc.longitude ?? loc.lon ?? -74.0060;
       }
     }
 
@@ -1658,7 +1658,7 @@ print("Connected to:", driver.title)</pre>
       document.getElementById("np-proxy-user").value = parsed.username || "";
       document.getElementById("np-proxy-pass").value = parsed.password || "";
       updateNewProfilePreview();
-      showToast(`⚡ 프록시 자동 파싱 완료: ${parsed.type.toUpperCase()} ${parsed.host}:${parsed.port} (ID: ${parsed.username || "없음"})`);
+      showToast(`⚡ Proxy auto-parsed: ${parsed.type.toUpperCase()} ${parsed.host}:${parsed.port} (User: ${parsed.username || "none"})`);
     }
 
     function onStudioHostInput(val) {
@@ -1671,7 +1671,7 @@ print("Connected to:", driver.title)</pre>
           document.getElementById("np-proxy-port").value = parsed.port;
           if (parsed.username) document.getElementById("np-proxy-user").value = parsed.username;
           if (parsed.password) document.getElementById("np-proxy-pass").value = parsed.password;
-          showToast(`⚡ 호스트 입력란 프록시 문자열 자동 분리 완료!`);
+          showToast(`⚡ Proxy string auto-split from host input!`);
         }
       }
       updateNewProfilePreview();
@@ -1688,7 +1688,7 @@ print("Connected to:", driver.title)</pre>
       if (!document.getElementById("prx-name").value.trim()) {
         document.getElementById("prx-name").value = `${parsed.type.toUpperCase()} ${parsed.host}:${parsed.port}`;
       }
-      showToast(`⚡ 프록시 주소 자동 분리 완료: ${parsed.host}:${parsed.port}`);
+      showToast(`⚡ Proxy string auto-parsed: ${parsed.host}:${parsed.port}`);
     }
 
     async function testNewProxyInManager() {
@@ -1698,9 +1698,9 @@ print("Connected to:", driver.title)</pre>
         port: parseInt(document.getElementById("prx-port").value || "0", 10),
         username: document.getElementById("prx-user").value.trim(),
         password: document.getElementById("prx-pass").value.trim(),
-        country: document.getElementById("prx-country").value || "KR",
+        country: document.getElementById("prx-country").value || "US",
       };
-      showToast("🔍 프록시 터널 연결 및 출구 IP·국가·타임존 조회 중...");
+      showToast("🔍 Testing proxy tunnel & resolving exit IP, country, and timezone...");
       const res = await fetch("/api/freeanti/proxy-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1713,9 +1713,9 @@ print("Connected to:", driver.title)</pre>
         }
         if (r.exit_ip) document.getElementById("prx-exit-ip").value = r.exit_ip;
         if (r.timezone) document.getElementById("prx-tz").value = r.timezone;
-        showToast(`✅ 프록시 터널링 성공! 출구 IP: ${r.exit_ip} [${r.country_code}] (${r.timezone})`);
+        showToast(`✅ Proxy tunnel verified! Exit IP: ${r.exit_ip} [${r.country_code}] (${r.timezone})`);
       } else {
-        showToast("❌ 프록시 조회 실패");
+        showToast("❌ Proxy lookup failed");
       }
     }
 
@@ -1728,7 +1728,7 @@ print("Connected to:", driver.title)</pre>
       const exitIpField = document.getElementById("np-webrtc-ip").value.trim();
       const hasProxyServer = ptype !== "direct" && phost && pport > 0;
       const exitIp = hasProxyServer ? "" : exitIpField;
-      const country = document.getElementById("np-proxy-country").value || "KR";
+      const country = document.getElementById("np-proxy-country").value || "US";
       const proxy = {
         type: ptype,
         host: phost,
@@ -1738,7 +1738,7 @@ print("Connected to:", driver.title)</pre>
         exit_ip: exitIp,
         country: country,
       };
-      showToast(hasProxyServer ? `🔍 프록시(${phost}:${pport}) 터널링으로 실제 출구 IP·국가·타임존 조회 중...` : "🔍 공인 IP 위치·타임존·언어 조회 중...");
+      showToast(hasProxyServer ? `🔍 Tunneling through proxy (${phost}:${pport}) to resolve exit IP & timezone...` : "🔍 Resolving public IP geolocation, timezone & languages...");
       const res = await fetch("/api/freeanti/proxy-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1768,16 +1768,16 @@ print("Connected to:", driver.title)</pre>
           document.getElementById("np-lon").value = r.longitude ?? r.lon;
         }
         updateNewProfilePreview();
-        showToast(`✅ 프록시 매칭 완료 (${r.source === "proxy_tunnel_geoip" ? "실제 프록시 터널" : "GeoIP"}): ${r.exit_ip} [${cc}] ${r.timezone}`);
+        showToast(`✅ Proxy matched (${r.source === "proxy_tunnel_geoip" ? "Live Proxy Tunnel" : "GeoIP"}): ${r.exit_ip} [${cc}] ${r.timezone}`);
       }
     }
 
     function openCreateStudioNew() {
       document.getElementById("np-edit-id").value = "";
-      document.getElementById("studio-mode-badge").textContent = "신규 프로파일 생성 모드";
+      document.getElementById("studio-mode-badge").textContent = "Create New Profile";
       document.getElementById("studio-mode-badge").className = "badge badge-tae";
-      document.getElementById("btn-save-profile").textContent = "💾 새 프로파일 생성";
-      document.getElementById("btn-save-launch-profile").textContent = "🚀 생성 후 즉시 브라우저 열기";
+      document.getElementById("btn-save-profile").textContent = "💾 Create Profile";
+      document.getElementById("btn-save-launch-profile").textContent = "🚀 Create & Launch Browser";
 
       document.getElementById("np-name").value = "";
       document.getElementById("np-notes").value = "";
@@ -1798,7 +1798,7 @@ print("Connected to:", driver.title)</pre>
       document.getElementById("np-graphics-api").value = "Direct3D11|d3d11";
       populateGpuPresetSelect();
 
-      document.getElementById("np-proxy-country").value = "KR";
+      document.getElementById("np-proxy-country").value = "US";
       setFollowSwitch("tz", true);
       setFollowSwitch("lang", true);
       setFollowSwitch("uilang", true);
@@ -1814,10 +1814,10 @@ print("Connected to:", driver.title)</pre>
       const prx = p.proxy || {};
 
       document.getElementById("np-edit-id").value = p.id;
-      document.getElementById("studio-mode-badge").textContent = `프로파일 수정 모드 (#${p.serial_number} ${p.id})`;
+      document.getElementById("studio-mode-badge").textContent = `Edit Profile (#${p.serial_number} ${p.id})`;
       document.getElementById("studio-mode-badge").className = "badge badge-gpu";
-      document.getElementById("btn-save-profile").textContent = "💾 수정 사항 저장";
-      document.getElementById("btn-save-launch-profile").textContent = "🚀 저장 후 즉시 브라우저 열기";
+      document.getElementById("btn-save-profile").textContent = "💾 Save Changes";
+      document.getElementById("btn-save-launch-profile").textContent = "🚀 Save & Launch Browser";
 
       document.getElementById("np-name").value = p.name || "";
       document.getElementById("np-group").value = p.group_id || "default";
@@ -1849,7 +1849,7 @@ print("Connected to:", driver.title)</pre>
       document.getElementById("np-webgpu-arch").value = fp.webgpu_architecture || "ada-lovelace";
 
       // Proxy & Follow switches
-      const country = prx.country || fp.proxy_country || "KR";
+      const country = prx.country || fp.proxy_country || "US";
       if (STATE.countryLocales[country]) {
         document.getElementById("np-proxy-country").value = country;
       }
@@ -1862,7 +1862,7 @@ print("Connected to:", driver.title)</pre>
         ? `${prx.type}://${prx.username ? `${prx.username}:${prx.password || ""}@` : ""}${prx.host}:${prx.port}`
         : "";
       document.getElementById("np-webrtc-mode").value = fp.webrtc_mode || "proxy";
-      document.getElementById("np-webrtc-ip").value = fp.webrtc_public_ip || prx.exit_ip || "211.234.120.45";
+      document.getElementById("np-webrtc-ip").value = fp.webrtc_public_ip || prx.exit_ip || "198.51.100.77";
 
       setFollowSwitch("tz", fp.follow_proxy_timezone !== false);
       if (fp.follow_proxy_timezone === false && fp.timezone) {
@@ -1881,8 +1881,8 @@ print("Connected to:", driver.title)</pre>
 
       setFollowSwitch("geo", fp.follow_proxy_geolocation !== false);
       if (fp.follow_proxy_geolocation === false) {
-        document.getElementById("np-lat").value = fp.latitude ?? 37.5665;
-        document.getElementById("np-lon").value = fp.longitude ?? 126.9780;
+        document.getElementById("np-lat").value = fp.latitude ?? 40.7128;
+        document.getElementById("np-lon").value = fp.longitude ?? -74.0060;
       }
       document.getElementById("np-acc").value = fp.accuracy || 45;
 
@@ -1922,7 +1922,7 @@ print("Connected to:", driver.title)</pre>
 
       const fg = document.getElementById("filter-group");
       const currentFg = fg.value;
-      fg.innerHTML = `<option value="">전체 그룹</option>` +
+      fg.innerHTML = `<option value="">All Groups</option>` +
         STATE.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join("");
       fg.value = currentFg;
 
@@ -1939,24 +1939,24 @@ print("Connected to:", driver.title)</pre>
       document.getElementById("badge-proxy-count").textContent = STATE.proxies.length;
 
       const sel = document.getElementById("np-saved-proxy");
-      sel.innerHTML = `<option value="">직접 입력 / 선택 안함</option>` +
-        STATE.proxies.map(p => `<option value="${p.id}">[${p.country || 'KR'}] ${p.name} (${p.type.toUpperCase()} ${p.host ? p.host + ':' + p.port : 'Direct'}${p.username ? ' · 인증됨' : ''})</option>`).join("");
+      sel.innerHTML = `<option value="">Manual Input / None</option>` +
+        STATE.proxies.map(p => `<option value="${p.id}">[${p.country || 'US'}] ${p.name} (${p.type.toUpperCase()} ${p.host ? p.host + ':' + p.port : 'Direct'}${p.username ? ' · Auth' : ''})</option>`).join("");
 
       const tbody = document.getElementById("proxies-tbody");
       tbody.innerHTML = STATE.proxies.map(p => {
-        const c = p.country || "KR";
+        const c = p.country || "US";
         const loc = STATE.countryLocales[c] || {};
         return `
         <tr>
           <td><strong>${p.name}</strong></td>
           <td><span class="badge badge-tae">${c}</span></td>
           <td><span class="badge badge-os">${p.type.toUpperCase()}</span></td>
-          <td class="mono">${p.host ? `${p.host}:${p.port}` : "로컬 직접 연결 (Direct)"}</td>
-          <td class="mono" style="color:#34d399">${p.username ? `${p.username} (비밀번호 설정됨)` : "<span style='color:var(--text-dim)'>없음</span>"}</td>
-          <td class="mono" style="color:var(--tae)">${p.exit_ip || "자동 터널 조회"}</td>
-          <td class="mono">${p.timezone || loc.timezone || "Asia/Seoul"} · ${(loc.languages || ["ko-KR"]).slice(0,2).join(",")}</td>
+          <td class="mono">${p.host ? `${p.host}:${p.port}` : "Direct Connection"}</td>
+          <td class="mono" style="color:#34d399">${p.username ? `${p.username} (Password set)` : "<span style='color:var(--text-dim)'>None</span>"}</td>
+          <td class="mono" style="color:var(--tae)">${p.exit_ip || "Auto Tunnel Lookup"}</td>
+          <td class="mono">${p.timezone || loc.timezone || "America/New_York"} · ${(loc.languages || ["en-US"]).slice(0,2).join(",")}</td>
           <td style="text-align:right">
-            <button class="btn btn-sm btn-danger" onclick="deleteProxy('${p.id}')">삭제</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProxy('${p.id}')">Delete</button>
           </td>
         </tr>
       `}).join("");
@@ -1986,24 +1986,24 @@ print("Connected to:", driver.title)</pre>
         const isRunning = act && act.status === "Active";
 
         const statusHtml = isRunning
-          ? `<div><span class="badge badge-active"><span class="dot ok"></span>실행 중 (PID ${act.pid})</span></div>
+          ? `<div><span class="badge badge-active"><span class="dot ok"></span>Running (PID ${act.pid})</span></div>
              <div class="mono" style="font-size:11px;color:var(--text-muted);margin-top:3px;">
                ${act.debug_port ? `CDP: ${act.debug_port}` : ""} ${act.marionette_port ? `Marionette: ${act.marionette_port}` : ""}
              </div>`
-          : `<span class="badge badge-idle">대기 중</span>`;
+          : `<span class="badge badge-idle">Idle</span>`;
 
         const actionBtn = isRunning
-          ? `<button class="btn btn-sm btn-danger" onclick="stopProfile('${p.id}')">⏹ 닫기</button>`
-          : `<button class="btn btn-sm btn-primary" onclick="startProfile('${p.id}')">▶ 열기</button>`;
+          ? `<button class="btn btn-sm btn-danger" onclick="stopProfile('${p.id}')">⏹ Stop</button>`
+          : `<button class="btn btn-sm btn-primary" onclick="startProfile('${p.id}')">▶ Open</button>`;
 
         const gApi = fp.graphics_api || "Direct3D11";
         const gModel = fp.gpu_model || (fp.webgl_renderer || "").slice(0, 38);
-        const pCountry = prx.country || fp.proxy_country || "KR";
-        const followTzTag = fp.follow_proxy_timezone !== false ? "🔗프록시TZ" : "✋수동TZ";
-        const followLangTag = fp.follow_proxy_language !== false ? "🔗프록시언어" : "✋수동언어";
+        const pCountry = prx.country || fp.proxy_country || "US";
+        const followTzTag = fp.follow_proxy_timezone !== false ? "🔗ProxyTZ" : "✋ManualTZ";
+        const followLangTag = fp.follow_proxy_language !== false ? "🔗ProxyLang" : "✋ManualLang";
         const locInfo = STATE.countryLocales[pCountry] || {};
-        const effTz = fp.follow_proxy_timezone !== false ? (prx.timezone || locInfo.timezone || fp.timezone || "Asia/Seoul") : (fp.timezone || "Asia/Seoul");
-        const effLang = fp.follow_proxy_language !== false ? ((locInfo.languages || fp.languages || ["ko-KR"])[0]) : ((fp.languages || ["ko-KR"])[0]);
+        const effTz = fp.follow_proxy_timezone !== false ? (prx.timezone || locInfo.timezone || fp.timezone || "America/New_York") : (fp.timezone || "America/New_York");
+        const effLang = fp.follow_proxy_language !== false ? ((locInfo.languages || fp.languages || ["en-US"])[0]) : ((fp.languages || ["en-US"])[0]);
 
         return `
           <tr>
@@ -2029,7 +2029,7 @@ print("Connected to:", driver.title)</pre>
                 <span class="badge badge-tae">${pCountry}</span>
                 <span class="badge badge-os">${(prx.type || "direct").toUpperCase()}</span>
                 <span style="color:var(--tae)">${prx.host ? `${prx.host}:${prx.port}` : (fp.webrtc_public_ip || "Direct")}</span>
-                ${prx.username ? `<span class="badge badge-gpu" title="ProxyUser: ${prx.username}">🔑인증</span>` : ""}
+                ${prx.username ? `<span class="badge badge-gpu" title="ProxyUser: ${prx.username}">🔑Auth</span>` : ""}
               </div>
               <div class="mono" style="font-size:11px;color:var(--text-muted);margin-top:3px;">
                 <span style="color:#34d399">${followTzTag}</span> ${effTz} · <span style="color:#60a5fa">${followLangTag}</span> ${effLang}
@@ -2038,10 +2038,10 @@ print("Connected to:", driver.title)</pre>
             <td>${statusHtml}</td>
             <td style="text-align:right;white-space:nowrap;">
               ${actionBtn}
-              <button class="btn btn-sm" onclick="openEditProfileStudio('${p.id}')" title="그래픽카드/OpenGL/프록시 타임존·언어 설정 수정">✏️ 설정</button>
-              <button class="btn btn-sm" onclick="openInspector('${p.id}')" title="사이드카 및 명령줄 상세">🔍 상세</button>
-              <button class="btn btn-sm" onclick="randomizeProfile('${p.id}')" title="지문 재생성">🎲</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}')" title="삭제">🗑</button>
+              <button class="btn btn-sm" onclick="openEditProfileStudio('${p.id}')" title="Edit GPU/OpenGL & Proxy TimeZone/Language">✏️ Edit</button>
+              <button class="btn btn-sm" onclick="openInspector('${p.id}')" title="Inspect Sidecars & Command Line">🔍 Inspect</button>
+              <button class="btn btn-sm" onclick="randomizeProfile('${p.id}')" title="Randomize Fingerprint">🎲</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}')" title="Delete Profile">🗑</button>
             </td>
           </tr>
         `;
@@ -2060,9 +2060,9 @@ print("Connected to:", driver.title)</pre>
             <td class="mono">${g.id}</td>
             <td><strong>${g.name}</strong></td>
             <td style="color:var(--text-muted)">${g.remark || "-"}</td>
-            <td><span class="badge badge-tae">${cnt}개 프로파일</span></td>
+            <td><span class="badge badge-tae">${cnt} profiles</span></td>
             <td style="text-align:right">
-              ${g.id === "default" ? `<span style="font-size:11.5px;color:var(--text-dim)">기본 그룹</span>` : `<button class="btn btn-sm btn-danger" onclick="deleteGroup('${g.id}')">삭제</button>`}
+              ${g.id === "default" ? `<span style="font-size:11.5px;color:var(--text-dim)">Default Group</span>` : `<button class="btn btn-sm btn-danger" onclick="deleteGroup('${g.id}')">Delete</button>`}
             </td>
           </tr>
         `;
@@ -2070,7 +2070,7 @@ print("Connected to:", driver.title)</pre>
     }
 
     async function startProfile(id) {
-      showToast(`브라우저 실행 중... (${id})`);
+      showToast(`Launching browser... (${id})`);
       const res = await fetch(`/api/freeanti/profiles/${id}/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2078,34 +2078,34 @@ print("Connected to:", driver.title)</pre>
       }).then(r => r.json());
       if (res.ok) {
         const kname = res.session.kernel_type === "yangbrowser" ? "YangBrowser 153" : "TaeBrowser 153";
-        showToast(`✅ ${kname} 실행 완료! (PID: ${res.session.pid})`);
+        showToast(`✅ ${kname} launched! (PID: ${res.session.pid})`);
       } else {
-        showToast(`❌ 실행 실패: ${res.error}`);
+        showToast(`❌ Launch failed: ${res.error}`);
       }
       await loadProfiles();
     }
 
     async function stopProfile(id) {
       await fetch(`/api/freeanti/profiles/${id}/stop`, { method: "POST" });
-      showToast(`⏹ 프로파일(${id}) 브라우저가 종료되었습니다.`);
+      showToast(`⏹ Profile (${id}) browser stopped.`);
       await loadProfiles();
     }
 
     async function stopAllProfiles() {
       await fetch("/api/freeanti/profiles/stop-all", { method: "POST" });
-      showToast("⏹ 실행 중인 모든 브라우저를 종료했습니다.");
+      showToast("⏹ All running browsers have been stopped.");
       await loadProfiles();
     }
 
     async function randomizeProfile(id) {
       await fetch(`/api/freeanti/profiles/${id}/randomize`, { method: "POST" });
-      showToast(`🎲 프로파일(${id})의 지문이 새로 생성되었습니다.`);
+      showToast(`🎲 Fingerprint randomized for profile (${id}).`);
       await loadProfiles();
     }
 
     async function deleteProfile(id) {
       await fetch(`/api/freeanti/profiles/${id}`, { method: "DELETE" });
-      showToast(`🗑 프로파일(${id})이 삭제되었습니다.`);
+      showToast(`🗑 Profile (${id}) deleted.`);
       await loadProfiles();
     }
 
@@ -2119,19 +2119,19 @@ print("Connected to:", driver.title)</pre>
 
     async function batchStartSelected() {
       const ids = getSelectedIds();
-      if (!ids.length) return showToast("선택된 프로파일이 없습니다.");
+      if (!ids.length) return showToast("No profiles selected.");
       for (const id of ids) await startProfile(id);
     }
 
     async function batchStopSelected() {
       const ids = getSelectedIds();
-      if (!ids.length) return showToast("선택된 프로파일이 없습니다.");
+      if (!ids.length) return showToast("No profiles selected.");
       for (const id of ids) await stopProfile(id);
     }
 
     async function batchRandomizeSelected() {
       const ids = getSelectedIds();
-      if (!ids.length) return showToast("선택된 프로파일이 없습니다.");
+      if (!ids.length) return showToast("No profiles selected.");
       for (const id of ids) await randomizeProfile(id);
     }
 
@@ -2171,7 +2171,7 @@ print("Connected to:", driver.title)</pre>
     }
 
     function onNewProxyCountrySelect() {
-      const c = document.getElementById("prx-country").value || "KR";
+      const c = document.getElementById("prx-country").value || "US";
       const loc = STATE.countryLocales[c];
       if (loc) {
         document.getElementById("prx-tz").value = loc.timezone;
@@ -2200,7 +2200,7 @@ print("Connected to:", driver.title)</pre>
       const pport = document.getElementById("np-proxy-port").value.trim();
       const puser = document.getElementById("np-proxy-user").value.trim();
       const ppass = document.getElementById("np-proxy-pass").value.trim();
-      const country = document.getElementById("np-proxy-country").value || "KR";
+      const country = document.getElementById("np-proxy-country").value || "US";
       const wip = document.getElementById("np-webrtc-ip").value;
       const tz = document.getElementById("np-tz").value;
       const langs = document.getElementById("np-langs").value;
@@ -2219,26 +2219,26 @@ print("Connected to:", driver.title)</pre>
 
       const exeName = ktype === "yangbrowser" ? "kernels/yangbrowser_153/YangBrowser.exe" : "kernels/taebrowser_153/TaeBrowser.exe";
       const angleFlag = gpuMode === "disabled" ? "--disable-gpu" : (ktype === "taebrowser" ? `--use-angle=${gBack}` : "WebRender + custom.webgl");
-      const proxyCliFlag = (ptype !== "direct" && phost && pport) ? `--proxy-server=${ptype}://${phost}:${pport}` : "Direct (플래그 없음)";
+      const proxyCliFlag = (ptype !== "direct" && phost && pport) ? `--proxy-server=${ptype}://${phost}:${pport}` : "Direct (No proxy flag)";
       const proxyAuthSummary = (ptype !== "direct" && puser)
         ? `ProxyUser="${puser}" / ProxyPassword="${ppass ? "••••••" : ""}"`
-        : "인증 없음";
+        : "No Auth";
 
       document.getElementById("np-preview-list").innerHTML = `
-        <div class="kv-row"><span class="kv-key">실행 커널 바이너리</span><span class="kv-val mono" style="color:var(--tae)">${exeName}</span></div>
-        <div class="kv-row"><span class="kv-key">에뮬레이션 OS / 스펙</span><span class="kv-val mono">${os} · ${res.replace("_", "x")} · ${cpu}C/${mem}GB</span></div>
-        <div class="kv-row"><span class="kv-key">그래픽 API / ANGLE 플래그</span><span class="kv-val mono"><span class="badge badge-gl">${gApi}</span> ${angleFlag}</span></div>
+        <div class="kv-row"><span class="kv-key">Kernel Binary</span><span class="kv-val mono" style="color:var(--tae)">${exeName}</span></div>
+        <div class="kv-row"><span class="kv-key">Emulated OS / Hardware</span><span class="kv-val mono">${os} · ${res.replace("_", "x")} · ${cpu}C/${mem}GB</span></div>
+        <div class="kv-row"><span class="kv-key">Graphics API / ANGLE Flag</span><span class="kv-val mono"><span class="badge badge-gl">${gApi}</span> ${angleFlag}</span></div>
         <div class="kv-row"><span class="kv-key">WebGL Vendor (37445)</span><span class="kv-val mono">${wVendor}</span></div>
         <div class="kv-row"><span class="kv-key">WebGL Renderer (37446)</span><span class="kv-val mono" style="color:#fbbf24">${wRenderer}</span></div>
-        <div class="kv-row"><span class="kv-key">WebGL / OpenGL 버전</span><span class="kv-val mono">${wVer}</span></div>
-        <div class="kv-row"><span class="kv-key">WebGPU 어댑터</span><span class="kv-val mono">${wgpuMode} (${wgpuVendor} / ${wgpuArch})</span></div>
-        <div class="kv-row"><span class="kv-key">프록시 CLI 플래그</span><span class="kv-val mono" style="color:#38bdf8">${proxyCliFlag}</span></div>
-        <div class="kv-row"><span class="kv-key">사이드카 인증 (_static)</span><span class="kv-val mono" style="color:#34d399">${proxyAuthSummary}</span></div>
-        <div class="kv-row"><span class="kv-key">프록시 출구 국가 / IP</span><span class="kv-val mono"><span class="badge badge-tae">${country}</span> ${wip}</span></div>
-        <div class="kv-row"><span class="kv-key">타임존 (${STATE.followTz ? '🔗프록시 자동' : '✋수동'})</span><span class="kv-val mono" style="color:#34d399">${tz}</span></div>
-        <div class="kv-row"><span class="kv-key">브라우저 언어 (${STATE.followLang ? '🔗프록시 자동' : '✋수동'})</span><span class="kv-val mono" style="color:#60a5fa">${langs}</span></div>
-        <div class="kv-row"><span class="kv-key">인터페이스 UI 언어 (${STATE.followUiLang ? '🔗자동' : '✋수동'})</span><span class="kv-val mono">--lang=${uiLang}</span></div>
-        <div class="kv-row"><span class="kv-key">GPS 위치 (${STATE.followGeo ? '🔗프록시 자동' : '✋수동'})</span><span class="kv-val mono">${lat}, ${lon}</span></div>
+        <div class="kv-row"><span class="kv-key">WebGL / OpenGL Version</span><span class="kv-val mono">${wVer}</span></div>
+        <div class="kv-row"><span class="kv-key">WebGPU Adapter</span><span class="kv-val mono">${wgpuMode} (${wgpuVendor} / ${wgpuArch})</span></div>
+        <div class="kv-row"><span class="kv-key">Proxy CLI Flag</span><span class="kv-val mono" style="color:#38bdf8">${proxyCliFlag}</span></div>
+        <div class="kv-row"><span class="kv-key">Sidecar Auth (_static)</span><span class="kv-val mono" style="color:#34d399">${proxyAuthSummary}</span></div>
+        <div class="kv-row"><span class="kv-key">Proxy Exit Country / IP</span><span class="kv-val mono"><span class="badge badge-tae">${country}</span> ${wip}</span></div>
+        <div class="kv-row"><span class="kv-key">TimeZone (${STATE.followTz ? '🔗Auto Proxy' : '✋Manual'})</span><span class="kv-val mono" style="color:#34d399">${tz}</span></div>
+        <div class="kv-row"><span class="kv-key">Browser Languages (${STATE.followLang ? '🔗Auto Proxy' : '✋Manual'})</span><span class="kv-val mono" style="color:#60a5fa">${langs}</span></div>
+        <div class="kv-row"><span class="kv-key">UI Language (${STATE.followUiLang ? '🔗Auto' : '✋Manual'})</span><span class="kv-val mono">--lang=${uiLang}</span></div>
+        <div class="kv-row"><span class="kv-key">GPS Coordinates (${STATE.followGeo ? '🔗Auto Proxy' : '✋Manual'})</span><span class="kv-val mono">${lat}, ${lon}</span></div>
       `;
     }
 
@@ -2254,8 +2254,8 @@ print("Connected to:", driver.title)</pre>
       const presetObj = STATE.gpuCatalog.find(g => g.id === presetId) || {};
 
       const langsRaw = document.getElementById("np-langs").value.trim();
-      const languages = langsRaw ? langsRaw.split(",").map(s => s.trim()).filter(Boolean) : ["ko-KR", "ko", "en-US", "en"];
-      const proxyCountry = document.getElementById("np-proxy-country").value || "KR";
+      const languages = langsRaw ? langsRaw.split(",").map(s => s.trim()).filter(Boolean) : ["en-US", "en"];
+      const proxyCountry = document.getElementById("np-proxy-country").value || "US";
 
       const payload = {
         name: document.getElementById("np-name").value.trim(),
@@ -2273,8 +2273,8 @@ print("Connected to:", driver.title)</pre>
           exit_ip: document.getElementById("np-webrtc-ip").value.trim(),
           country: proxyCountry,
           timezone: document.getElementById("np-tz").value.trim(),
-          latitude: parseFloat(document.getElementById("np-lat").value || "37.5665"),
-          longitude: parseFloat(document.getElementById("np-lon").value || "126.9780"),
+          latitude: parseFloat(document.getElementById("np-lat").value || "40.7128"),
+          longitude: parseFloat(document.getElementById("np-lon").value || "-74.0060"),
         },
         fingerprint: {
           screen_resolution: document.getElementById("np-res").value,
@@ -2308,8 +2308,8 @@ print("Connected to:", driver.title)</pre>
           ui_language: document.getElementById("np-ui-lang").value.trim(),
           follow_proxy_geolocation: STATE.followGeo,
           geolocation_enabled: true,
-          latitude: parseFloat(document.getElementById("np-lat").value || "37.5665"),
-          longitude: parseFloat(document.getElementById("np-lon").value || "126.9780"),
+          latitude: parseFloat(document.getElementById("np-lat").value || "40.7128"),
+          longitude: parseFloat(document.getElementById("np-lon").value || "-74.0060"),
           accuracy: parseInt(document.getElementById("np-acc").value || "45", 10),
         },
       };
@@ -2324,7 +2324,7 @@ print("Connected to:", driver.title)</pre>
       }).then(r => r.json());
 
       if (res.ok && res.profile) {
-        showToast(editId ? `✅ 프로파일 수정 완료: ${res.profile.name}` : `✅ 새 프로파일 생성 완료: ${res.profile.name}`);
+        showToast(editId ? `✅ Profile updated: ${res.profile.name}` : `✅ New profile created: ${res.profile.name}`);
         switchView("profiles");
         await loadProfiles();
         if (launchImmediately) {
@@ -2336,7 +2336,7 @@ print("Connected to:", driver.title)</pre>
     async function createGroup() {
       const name = document.getElementById("grp-name").value.trim();
       const remark = document.getElementById("grp-remark").value.trim();
-      if (!name) return showToast("그룹 이름을 입력하세요.");
+      if (!name) return showToast("Please enter a group name.");
       await fetch("/api/freeanti/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2344,13 +2344,13 @@ print("Connected to:", driver.title)</pre>
       });
       document.getElementById("grp-name").value = "";
       document.getElementById("grp-remark").value = "";
-      showToast("✅ 그룹이 추가되었습니다.");
+      showToast("✅ Group added.");
       await loadGroups();
     }
 
     async function deleteGroup(id) {
       await fetch(`/api/freeanti/groups/${id}`, { method: "DELETE" });
-      showToast("🗑 그룹이 삭제되었습니다.");
+      showToast("🗑 Group deleted.");
       await loadGroups();
       await loadProfiles();
     }
@@ -2359,14 +2359,14 @@ print("Connected to:", driver.title)</pre>
       const payload = {
         raw: document.getElementById("prx-raw").value.trim(),
         name: document.getElementById("prx-name").value.trim(),
-        country: document.getElementById("prx-country").value || "KR",
+        country: document.getElementById("prx-country").value || "US",
         type: document.getElementById("prx-type").value,
         host: document.getElementById("prx-host").value.trim(),
         port: parseInt(document.getElementById("prx-port").value || "0", 10),
         username: document.getElementById("prx-user").value.trim(),
         password: document.getElementById("prx-pass").value.trim(),
         exit_ip: document.getElementById("prx-exit-ip").value.trim(),
-        timezone: document.getElementById("prx-tz").value.trim() || "Asia/Seoul",
+        timezone: document.getElementById("prx-tz").value.trim() || "America/New_York",
       };
       await fetch("/api/freeanti/proxies", {
         method: "POST",
@@ -2375,13 +2375,13 @@ print("Connected to:", driver.title)</pre>
       });
       document.getElementById("prx-raw").value = "";
       document.getElementById("prx-name").value = "";
-      showToast("✅ 프록시가 저장되었습니다.");
+      showToast("✅ Proxy saved.");
       await loadProxies();
     }
 
     async function deleteProxy(id) {
       await fetch(`/api/freeanti/proxies/${id}`, { method: "DELETE" });
-      showToast("🗑 프록시가 삭제되었습니다.");
+      showToast("🗑 Proxy deleted.");
       await loadProxies();
     }
 
@@ -2394,12 +2394,12 @@ print("Connected to:", driver.title)</pre>
       const fp = p.fingerprint || {};
       const rl = (res.compiled && res.compiled.resolved_locale) || {};
       document.getElementById("insp-title").textContent = `${p.name} (#${p.serial_number})`;
-      document.getElementById("insp-sub").textContent = `ID: ${p.id} · 커널: ${p.kernel_type === 'yangbrowser' ? 'YangBrowser 153' : 'TaeBrowser 153'} · GPU: ${fp.graphics_api || 'Direct3D11'}`;
+      document.getElementById("insp-sub").textContent = `ID: ${p.id} · Kernel: ${p.kernel_type === 'yangbrowser' ? 'YangBrowser 153' : 'TaeBrowser 153'} · GPU: ${fp.graphics_api || 'Direct3D11'}`;
 
       document.getElementById("dyn-ip").value = fp.webrtc_public_ip || "";
-      document.getElementById("dyn-tz").value = rl.timezone || fp.timezone || "Asia/Seoul";
-      document.getElementById("dyn-lat").value = rl.latitude ?? fp.latitude ?? 37.5665;
-      document.getElementById("dyn-lon").value = rl.longitude ?? fp.longitude ?? 126.9780;
+      document.getElementById("dyn-tz").value = rl.timezone || fp.timezone || "America/New_York";
+      document.getElementById("dyn-lat").value = rl.latitude ?? fp.latitude ?? 40.7128;
+      document.getElementById("dyn-lon").value = rl.longitude ?? fp.longitude ?? -74.0060;
 
       document.getElementById("insp-cmdline").textContent = res.launch_plan.command_line;
       document.getElementById("insp-locale").textContent = JSON.stringify(res.compiled.resolved_locale, null, 2);
@@ -2427,7 +2427,7 @@ print("Connected to:", driver.title)</pre>
         body: JSON.stringify(payload),
       }).then(r => r.json());
       if (res.ok) {
-        showToast("⚡ 실시간 DynamicConfig(_webrtc) 사이드카가 갱신되었습니다!");
+        showToast("⚡ Live DynamicConfig (_webrtc) sidecar hot-reloaded!");
         await openInspector(STATE.inspectingId);
         await loadProfiles();
       }
@@ -2446,7 +2446,7 @@ print("Connected to:", driver.title)</pre>
 
       const exts = (STATE.kernels && STATE.kernels.extensions) || {};
       document.getElementById("ext-list-box").innerHTML = `
-        <div class="kv-row"><span class="kv-key">freeanti_assistant (내장 MV3)</span><span class="kv-val" style="color:#34d399">활성 (x-browser-validation + Alt+P 자동 타이핑)</span></div>
+        <div class="kv-row"><span class="kv-key">freeanti_assistant (Built-in MV3)</span><span class="kv-val" style="color:#34d399">Active (x-browser-validation + Alt+P Auto-Type)</span></div>
         ${Object.values(exts).map(e => `
           <div class="kv-row"><span class="kv-key">${e.name}</span><span class="kv-val mono">${e.path}</span></div>
         `).join("")}
@@ -2458,11 +2458,11 @@ print("Connected to:", driver.title)</pre>
       const tae = STATE.kernels.default_taebrowser || {};
       const yang = STATE.kernels.default_yangbrowser || {};
       document.getElementById("kernels-detail-box").innerHTML = `
-        <div class="kv-row"><span class="kv-key">🟦 TaeBrowser 153 실행 파일</span><span class="kv-val mono" style="color:var(--tae)">${tae.executable || "-"}</span></div>
-        <div class="kv-row"><span class="kv-key">🟦 TaeBrowser Chromium 버전</span><span class="kv-val mono">${tae.chromium_version || "-"}</span></div>
+        <div class="kv-row"><span class="kv-key">🟦 TaeBrowser 153 Executable</span><span class="kv-val mono" style="color:var(--tae)">${tae.executable || "-"}</span></div>
+        <div class="kv-row"><span class="kv-key">🟦 TaeBrowser Chromium Version</span><span class="kv-val mono">${tae.chromium_version || "-"}</span></div>
         <div class="kv-row"><span class="kv-key">🟦 TaeBrowser ChromeDriver</span><span class="kv-val mono">${tae.webdriver || "-"}</span></div>
-        <div class="kv-row"><span class="kv-key">🟪 YangBrowser 153 실행 파일</span><span class="kv-val mono" style="color:#c084fc">${yang.executable || "-"}</span></div>
-        <div class="kv-row"><span class="kv-key">🟪 YangBrowser Gecko 버전</span><span class="kv-val mono">${yang.gecko_version || "-"} (Build ${yang.build_id || "-"})</span></div>
+        <div class="kv-row"><span class="kv-key">🟪 YangBrowser 153 Executable</span><span class="kv-val mono" style="color:#c084fc">${yang.executable || "-"}</span></div>
+        <div class="kv-row"><span class="kv-key">🟪 YangBrowser Gecko Version</span><span class="kv-val mono">${yang.gecko_version || "-"} (Build ${yang.build_id || "-"})</span></div>
         <div class="kv-row"><span class="kv-key">🟪 YangBrowser GeckoDriver</span><span class="kv-val mono">${yang.webdriver || "-"}</span></div>
       `;
 
@@ -2475,7 +2475,7 @@ print("Connected to:", driver.title)</pre>
               <span class="kv-val mono">PID ${l.pid} · ${l.debug_link || "OK"}</span>
             </div>
           `).join("")
-        : `<div style="color:var(--text-muted)">아직 브라우저 실행 기록이 없습니다.</div>`;
+        : `<div style="color:var(--text-muted)">No browser launch history yet.</div>`;
     }
 
     async function refreshAll() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -376,7 +376,7 @@
       const webrtcIp = await probeWebRTC();
       const resLoc = inspectData?.compiled?.resolved_locale || {};
       renderRows("netRows", [
-        ["Proxy Country", resLoc.proxy_country || profFp.proxy_country || "KR", "match"],
+        ["Proxy Country", resLoc.proxy_country || profFp.proxy_country || "US", "match"],
         ["TimeZone Mode", resLoc.follow_proxy_timezone !== false ? "🔗 Auto-Follow Proxy IP" : "✋ Manual TimeZone", "match"],
         ["Intl TimeZone", tz, "match"],
         ["Language Mode", resLoc.follow_proxy_language !== false ? "🔗 Auto-Follow Proxy IP" : "✋ Manual Languages", "match"],
