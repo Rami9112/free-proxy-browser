@@ -5,14 +5,8 @@ __pycache__/
 .venv/
 venv/
 
-# Runtime browser profile caches, WebView2 cache, logs, and local SQLite DB
-data/profiles/
-data/webview2_cache/
-data/*.db
-data/*.db-journal
-data/*.db-wal
-data/*.db-shm
-data/*.log
+# Runtime browser profile caches, WebView2 cache, generated extensions, logs, and local SQLite DB
+data/
 kernels/*/debug.log
 
 # Raw >50MB kernel binaries (tracked in Git as <45MB *.zpart* chunks and auto-unpacked on launch)
